@@ -1,0 +1,9 @@
+{
+	"name": "forup_online_plug",
+	"description": "Online Plug-in for ForUp ERP",
+	"version": "1.0.0",
+	"homepage": "https://plug.forupsolucoes.com.br",
+	"mainsrc": "./src",
+	"projects": [],
+	"dependencies": {}
+}

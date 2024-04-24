@@ -1,0 +1,9 @@
+{
+	"name": "forup_client_plug",
+	"description": "Local Plug-in for ForUp ERP",
+	"version": "1.0.0",
+	"homepage": "https://forupsolucoes.com.br/client_plug",
+	"mainsrc": "./src",
+	"projects": [],
+	"dependencies": {}
+}
