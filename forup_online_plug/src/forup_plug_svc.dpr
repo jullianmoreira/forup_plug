@@ -11,13 +11,15 @@ uses
   entity_base in 'entities\entity_base.pas',
   helpers in 'lib\helpers.pas',
   repository_base in 'repositories\repository_base.pas',
-  controller_base in 'controllers\controller_base.pas';
+  controller_base in 'controllers\controller_base.pas',
+  logger in 'lib\logger.pas';
 
 var
   fHelper : Tfunc_helper;
 
 begin
   fHelper := Tfunc_helper.Create;
+  conn_module := Tconn_module.Create(nil);
   try
     Writeln(fHelper.AppPath);
   except
