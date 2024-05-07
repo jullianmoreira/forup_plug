@@ -330,7 +330,6 @@ begin
 
                 end;
             end;
-          iJoinClause := -1;
           Result.Add(buildString);
         end;
     end;
