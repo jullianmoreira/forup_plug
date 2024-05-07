@@ -1,0 +1,15 @@
+[Unit]
+Description=ForUp Plug Service
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+StartLimitInterval=0
+ExecStart=/home/forupadmin/forup-plugin/forup_plug_svc
+WorkingDirectory=/home/forupadmin/forup-plugin
+User=root
+
+[Install]
+WantedBy=multi-user.target

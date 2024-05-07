@@ -1,0 +1,15 @@
+[Unit]
+Description=PAServer Delphi
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+StartLimitInterval=0
+ExecStart=/home/forup-dev/PAServer/22.0/paserver -password=forup
+WorkingDirectory=/home/forup-dev/PAServer/22.0/
+User=forup-dev
+
+[Install]
+WantedBy=multi-user.target
