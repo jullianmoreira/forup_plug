@@ -2,22 +2,28 @@ unit forup_types;
 
 interface
 uses System.IOUtils, System.StrUtils, System.WideStrUtils, System.Math,
-System.DateUtils, System.Classes, System.SysUtils, Generics.Collections;
+System.DateUtils, System.Classes, System.SysUtils, Generics.Collections, orm_attributes;
 
 const
-{$IFDEF MSWINDOWS}
-  PATH_SEP = '\';
-{$ELSE}
-  PATH_SEP = '/';
-{$ENDIF}
-  CONN_CFG_FILE = 'db'+PATH_SEP;
+
+  LOGDIR = 'log'+PathDelim;
+  LOGFILE = 'plugservice.log';
+  CONN_CFG_DIR = 'db'+PathDelim;
+  CONN_CFG_FILE = 'cfg.ini';
 
   EMPTY_SPACE = ' ';
   
 
 type
+  Tactive_db = (adbPostgres, adbMySQL, adbMSSQL, adbFirebird, adbSQLite);
   Tcfg_type = (ctDataBase, ctResource, ctService, ctOther);
   Tjoin_type = (jtNONE, jtINNER, jtLEFT, jtRIGHT, jtLEFTOUTER, jtRIGHTOUTER);
+
+  Tformat = record
+    Field : String;
+    Mask : String;
+    isFormating : Torm_db_type;
+  end;
 
   {$M+}
   Tcondition_field = class(TObject)
@@ -88,7 +94,8 @@ type
       procedure addJoinMatch(aJoin : Tjoin_criteria);
 
 
-      function buildCriteria : TStringList;
+      function buildCriteria(aWhere : Boolean = true; aOrder : Boolean = true;
+        aGroup : Boolean = true; aHaving : Boolean = true)  : TStringList;
     published
       property OrderBy: String read FOrderBy write FOrderBy;
       property GroupBy: String read FGroupBy write FGroupBy;
@@ -263,7 +270,8 @@ begin
     end;
 end;
 
-function Tcriteria.buildCriteria: TStringList;
+function Tcriteria.buildCriteria(aWhere : Boolean = true; aOrder : Boolean = true;
+        aGroup : Boolean = true; aHaving : Boolean = true)  : TStringList;
 var
   aWhereClause, aJoinClause : String;
   iCriteria, iJoinClause: Integer;
@@ -272,7 +280,8 @@ var
   buildString : String;
 begin
   Result := TStringList.Create;
-  aWhereClause := ' WHERE ';
+
+  aWhereClause := IfThen(aWhere, ' WHERE ', ' AND ');
 
   helper := Tfunc_helper.Create;
 
@@ -378,14 +387,14 @@ begin
             end;
         end;
 
-      if Self.FOrderBy <> EmptyStr then
-        Result.Add(Self.FOrderBy);
+      if (Self.FOrderBy <> EmptyStr) and aOrder then
+        Result.Add('ORDER BY'+EMPTY_SPACE+Self.FOrderBy);
 
-      if Self.FGroupBy <> EmptyStr then
-        Result.Add(Self.FGroupBy);
+      if (Self.FGroupBy <> EmptyStr) and aGroup then
+        Result.Add('GROUP BY'+EMPTY_SPACE+Self.FGroupBy);
 
-      if Self.FHaving <> EmptyStr then
-        Result.Add(Self.FHaving);
+      if (Self.FHaving <> EmptyStr) and aHaving then
+        Result.Add('HAVING'+EMPTY_SPACE+Self.FHaving);
     end;
 
   FreeAndNil(helper);

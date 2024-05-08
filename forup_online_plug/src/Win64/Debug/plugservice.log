@@ -1,0 +1,1 @@
+2024-05-07 -> 0002 [COULD NOT CONNECT ON POSTGRE DATABASE] ({"exception_message":"[FireDAC][Phys][PG][libpq] connection to server at \"172.23.52.207\", port 5432 failed: Connection timed out (0x0000274C\/10060)\n\tIs the server running on that host and accepting TCP\/IP connections?\n"})

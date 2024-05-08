@@ -1,7 +1,9 @@
 object conn_module: Tconn_module
+  OnCreate = DataModuleCreate
   Height = 496
   Width = 880
   object fup_manager: TFDManager
+    WaitCursor = gcrDefault
     FormatOptions.AssignedValues = [fvMapRules]
     FormatOptions.OwnMapRules = True
     FormatOptions.MapRules = <>
@@ -53,11 +55,25 @@ object conn_module: Tconn_module
     Top = 56
   end
   object pg_driver: TFDPhysPgDriverLink
-    Left = 272
-    Top = 120
+    Left = 424
+    Top = 32
   end
   object fup_sqlite: TFDConnection
     Left = 64
     Top = 160
+  end
+  object fdWait: TFDGUIxWaitCursor
+    Provider = 'Console'
+    ScreenCursor = gcrDefault
+    Left = 424
+    Top = 96
+  end
+  object mysql_driver: TFDPhysMySQLDriverLink
+    Left = 424
+    Top = 160
+  end
+  object mssql_driver: TFDPhysMSSQLDriverLink
+    Left = 424
+    Top = 224
   end
 end
