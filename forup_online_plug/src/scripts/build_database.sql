@@ -1,5 +1,7 @@
 /*ONLINE DATABASE FOR THE PLUGUP SERVICE*/
 
+CREATE SCHEMA jobservice AUTHORIZATION plugupservice;
+
 CREATE TABLE jobservice.client_connection (
 	cnpj_cpf varchar(14) NOT NULL,
 	additional_info json NULL,
@@ -30,7 +32,7 @@ CREATE TABLE jobservice.job_config (
 );
 
 insert into jobservice.job_config (client_id, job_info, job_params)
-values ('b8850b7c-dd90-49bf-a178-0cb3fdb7352f','{"job_name":"Imprimir Venda MOB","job_description":"Imprime a venda executada no aplicativo MOBI ERP"}',
+values ((select id from jobservice.client_connection where cnpj_cpf='19503009000143'),'{"job_name":"Imprimir Venda MOB","job_description":"Imprime a venda executada no aplicativo MOBI ERP"}',
 '{"job_interval":30,"job_purge":false,"job_pull_entity":[{"entity":"DtoVenda","fields":["all"],"master_id":"_id","children":[{"entity":"DtoVendaProduto","fields":["all"],"master_id":"VendaID"}]}],"job_wait_status":["OrigemVenda = ''PDV''","FoiConferido = false","Impresso = false","Codigo >= 738"],"job_done_status":["FoiConferido = true","Impresso = true"]}');
 
 CREATE TABLE jobservice.jobs_waiting (

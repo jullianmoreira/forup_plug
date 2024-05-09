@@ -115,7 +115,6 @@ end;
 
 function Tfunc_helper.InitEnv: Boolean;
 begin
-  Result := false;
   CreateConfigFile(ctDataBase);
   CreateConfigFile(ctResource);
 

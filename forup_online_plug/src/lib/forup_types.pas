@@ -343,7 +343,7 @@ begin
         end;
     end;
 
-  buildOnly := Length(ConditionOnly) > 0;
+  buildOnly := false;
   for iCriteria := 0 to Self.Conditions.Count-1 do
     begin
       goMount := true;
@@ -356,6 +356,7 @@ begin
         end
       else if Length(ConditionOnly) > 0 then
         begin
+          buildOnly := true;
           if helper.item_in_array(iCriteria, ConditionOnly) then
             begin
               goMount := false;
