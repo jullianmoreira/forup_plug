@@ -17,7 +17,10 @@ uses
   repository_base in 'repositories\repository_base.pas',
   controller_base in 'controllers\controller_base.pas',
   logger in 'lib\logger.pas',
-  orm_attributes in 'lib\orm_attributes.pas';
+  orm_attributes in 'lib\orm_attributes.pas',
+  jobservice.client_connection in 'entities\jobservice\jobservice.client_connection.pas',
+  job_collector in 'job_resource\job_collector.pas',
+  job_listner in 'job_resource\job_listner.pas';
 
 var
   fLogger : Tlogger;

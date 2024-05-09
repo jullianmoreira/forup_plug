@@ -238,6 +238,9 @@
         <DCCReference Include="controllers\controller_base.pas"/>
         <DCCReference Include="lib\logger.pas"/>
         <DCCReference Include="lib\orm_attributes.pas"/>
+        <DCCReference Include="entities\jobservice\jobservice.client_connection.pas"/>
+        <DCCReference Include="job_resource\job_collector.pas"/>
+        <DCCReference Include="job_resource\job_listner.pas"/>
         <RcItem Include="res\mssql.zip">
             <ContainerId>ResourceItem</ContainerId>
             <ResourceType>RCDATA</ResourceType>
@@ -310,12 +313,6 @@
                 <DeployFile LocalName="Win64\Debug\forup_plug_svc.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win64">
                         <RemoteName>forup_plug_svc.exe</RemoteName>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
-                <DeployFile LocalName="Win64\Debug\forup_plug_svc.rsm" Configuration="Debug" Class="DebugSymbols">
-                    <Platform Name="Win64">
-                        <RemoteName>forup_plug_svc.rsm</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
