@@ -76,4 +76,24 @@ object conn_module: Tconn_module
     Left = 424
     Top = 224
   end
+  object pgQryList: TFDQuery
+    Connection = fup_postgre
+    Left = 64
+    Top = 240
+  end
+  object mongoQryList: TUniQuery
+    Connection = fup_mongo
+    Left = 280
+    Top = 160
+  end
+  object pgCmd: TFDCommand
+    Connection = fup_postgre
+    Left = 64
+    Top = 304
+  end
+  object mongoUpdQry: TUniQuery
+    Connection = fup_mongo
+    Left = 280
+    Top = 224
+  end
 end

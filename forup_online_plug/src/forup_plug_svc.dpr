@@ -24,13 +24,15 @@ uses
 
 var
   fLogger : Tlogger;
+  collector : TjobCollector;
 begin
   fLogger := Tlogger.Create;
 
   if THelper.Functions.InitEnv then
     begin
-      conn_module := Tconn_module.Create(nil);
-      conn_module.ConnectPostgre;
+      collector := TjobCollector.Create(adbPostgres, '740', '64f2705f6b00c1f593efd30f');
+      collector.setClientConnection('19503009000143');
+      collector.getJobs;
     end
   else
     begin

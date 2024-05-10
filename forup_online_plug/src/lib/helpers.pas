@@ -3,7 +3,7 @@ unit helpers;
 interface
 uses System.IOUtils, System.StrUtils, System.WideStrUtils, System.Math,
 System.DateUtils, System.Classes, System.SysUtils, Generics.Collections,
-forup_types, System.Zip, System.Types;
+forup_types, System.Zip, System.Types, Data.DB, System.JSON;
 
 type
   Tfunc_helper = class(TObject)
@@ -12,6 +12,9 @@ type
       procedure CreateConfigFile(typeConfig : Tcfg_type);
       procedure LoadResource;
     public
+      function mongoLib32 : String;
+      function mongoLib64 : String;
+
       function AppPath : String;
       function InitEnv : Boolean;
 
@@ -19,6 +22,8 @@ type
       function item_in_array(item : String; aArray : TArray<String>) : Boolean; overload;
 
       function prepare_string_json(aStr : String) : String;
+
+      function dataset_to_json(aName : String; aData : TDataSet) : TJSONObject;
   end;
 
   THelper = class
@@ -113,6 +118,12 @@ begin
   aFile.SaveToFile(fName);
 end;
 
+function Tfunc_helper.dataset_to_json(aName: String;
+  aData: TDataSet): TJSONObject;
+begin
+
+end;
+
 function Tfunc_helper.InitEnv: Boolean;
 begin
   CreateConfigFile(ctDataBase);
@@ -144,13 +155,68 @@ var
   aResource: TResourceStream;
   aZip : TZipFile;
 begin
-  aResource := TResourceStream.Create(hInstance, 'PGDRV', RT_RCDATA);
-  if not TDirectory.Exists(AppPath+CONN_CFG_DIR+'drv') then
-    TDirectory.CreateDirectory(AppPath+CONN_CFG_DIR+'drv');
+  {$IFDEF MSWINDOWS}
+    if not TDirectory.Exists(AppPath+CONN_CFG_DIR+'drv') then
+      TDirectory.CreateDirectory(AppPath+CONN_CFG_DIR+'drv');
 
-  aZip := TZipFile.Create;
-  aZip.Open(aResource, zmRead);
-  aZip.ExtractAll(AppPath+CONN_CFG_DIR+'drv'+PathDelim);
+    if not TFile.Exists(AppPath+CONN_CFG_DIR+'drv'+PathDelim+'pgsql'+PathDelim+'libpq.dll') then
+      begin
+        aResource := TResourceStream.Create(hInstance, 'PGDRV', RT_RCDATA);
+        aZip := TZipFile.Create;
+        aZip.Open(aResource, zmRead);
+        aZip.ExtractAll(AppPath+CONN_CFG_DIR+'drv'+PathDelim);
+      end;
+
+    if not TDirectory.Exists(AppPath+CONN_CFG_DIR+'drv'+PathDelim+'mongo') then
+      TDirectory.CreateDirectory(AppPath+CONN_CFG_DIR+'drv'+PathDelim+'mongo');
+    {$IFDEF WIN32}
+      if not TDirectory.Exists(AppPath+CONN_CFG_DIR+'drv'+PathDelim+'mongo'+PathDelim+'lib32') then
+        TDirectory.CreateDirectory(AppPath+CONN_CFG_DIR+'drv'+PathDelim+'mongo'+PathDelim+'lib32');
+      if not TFile.Exists(AppPath+CONN_CFG_DIR+'drv'+PathDelim+'mongo'+PathDelim+'lib32'+PathDelim+'libmongoc-1.0.dll') then
+        begin
+          if Assigned(aResource) then
+            FreeAndNil(aResource);
+          if Assigned(aZip) then
+            FreeAndNil(aZip);
+
+          aResource := TResourceStream.Create(hInstance, 'MONGO32DRV', RT_RCDATA);
+          aZip := TZipFile.Create;
+          aZip.Open(aResource, zmRead);
+          aZip.ExtractAll(AppPath+CONN_CFG_DIR+'drv'+PathDelim+'mongo'+PathDelim+'lib32');
+        end;
+    {$ELSE}
+
+      if not TDirectory.Exists(AppPath+CONN_CFG_DIR+'drv'+PathDelim+'mongo'+PathDelim+'lib64') then
+        TDirectory.CreateDirectory(AppPath+CONN_CFG_DIR+'drv'+PathDelim+'mongo'+PathDelim+'lib64');
+      if not TFile.Exists(AppPath+CONN_CFG_DIR+'drv'+PathDelim+'mongo'+PathDelim+'lib64'+PathDelim+'libmongoc-1.0.dll') then
+        begin
+          if Assigned(aResource) then
+            FreeAndNil(aResource);
+          if Assigned(aZip) then
+            FreeAndNil(aZip);
+
+          aResource := TResourceStream.Create(hInstance, 'MONGO64DRV', RT_RCDATA);
+          aZip := TZipFile.Create;
+          aZip.Open(aResource, zmRead);
+          aZip.ExtractAll(AppPath+CONN_CFG_DIR+'drv'+PathDelim+'mongo'+PathDelim+'lib64');
+        end;
+    {$ENDIF}
+  {$ENDIF}
+
+  if Assigned(aResource) then
+    FreeAndNil(aResource);
+  if Assigned(aZip) then
+    FreeAndNil(aZip);
+end;
+
+function Tfunc_helper.mongoLib32: String;
+begin
+  Result := AppPath+CONN_CFG_DIR+'drv'+PathDelim+'mongo'+PathDelim+'lib32'+PathDelim;
+end;
+
+function Tfunc_helper.mongoLib64: String;
+begin
+  Result := AppPath+CONN_CFG_DIR+'drv'+PathDelim+'mongo'+PathDelim+'lib64'+PathDelim;
 end;
 
 function Tfunc_helper.prepare_string_json(aStr: String): String;
