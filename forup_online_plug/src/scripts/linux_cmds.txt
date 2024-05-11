@@ -1,0 +1,22 @@
+#CREATE SERVICE
+
+sudo mkdir /opt/forup
+sudo mkdir /opt/forup/plugsvc
+sudo chmod -R 777 /opt/forup
+
+
+sudo cp ~/PAServer.service /etc/systemd/system
+sudo cp ~/forup/plugsvc/release/forup_plug.service /etc/systemd/system/
+sudo cp ~/forup/plugsvc/release/forup_plug_svc /opt/forup/plugsvc/
+sudo chmod -777 /opt/forup/plugsvc/forup_plug_svc
+
+#SOLVE POSTGRE CONNECTION ERROR
+sudo ln -s /usr/lib/x86_64-linux-gnu/libpq.so.5 /usr/lib/x86_64-linux-gnu/libpq.so
+
+
+
+sudo systemctl enable forup_plug.service
+sudo systemctl start forup_plug.service
+
+
+http://192.168.1.200:9090/jobs/740/64f2705f6b00c1f593efd30f/19503009000143

@@ -4,7 +4,7 @@ interface
 uses System.Rtti, System.SysUtils, System.StrUtils, System.DateUtils,
 System.JSON, System.Math, System.TypInfo, System.Types, System.Variants,
 Uconn_module, orm_attributes, forup_types, logger, helpers, System.Classes,
-Data.DB, MongoObjectsUni;
+Data.DB, MongoObjectsUni, System.Generics.Collections;
 
 type
   TjobCollector = class(TObject)
@@ -14,6 +14,7 @@ type
       LastPrinted : String;
       ConnBD : Tactive_db;
       ClientMongoConnection : TJSONValue;
+      procedure updateDtoVenda(id : String);
     public
       function getCurrentBD : Tactive_db;
       constructor Create(aConnBD : Tactive_db; aLastPrinted : String = ''; aEnterpriseID : String = ''); virtual;
@@ -34,7 +35,8 @@ begin
   Self.ConnBD := aConnBD;
   Self.LastPrinted := aLastPrinted;
   Self.EnterpriseID := aEnterpriseID;
-  conn_module := Tconn_module.Create(nil);
+  if not assigned(conn_module) then
+    conn_module := Tconn_module.Create(nil);
 end;
 
 destructor TjobCollector.Destroy;
@@ -61,16 +63,6 @@ begin
 end;
 
 function TjobCollector.getCreateJobs: TJSONObject;
-begin
-
-end;
-
-function TjobCollector.getCurrentBD: Tactive_db;
-begin
-  Result := Self.ConnBD;
-end;
-
-function TjobCollector.getJobs: TJSONObject;
 var
   mDoc : TMongoDocument;
   jobData : TJSONObject;
@@ -81,6 +73,8 @@ var
 begin
   try
     conn_module.ConnectMongo(Self.ClientMongoConnection);
+    jobData := TJSONObject.Create(TJSONPair.Create('orders',TJSONValue(TJSONArray.Create)));
+
     if conn_module.MongoDBConnected then
       begin
         with conn_module.mongoQryList do
@@ -98,12 +92,13 @@ begin
                 while not Eof do
                   begin
                     mDoc := TMongoDocument(GetObject('DtoVenda'));
+                    updateDtoVenda(mDoc.FieldByName['_id'].GetData.AsString.ToLower);
                     DtoVenda.AddElement(TJSONObject.ParseJSONValue(mDoc.Text));
                     Next;
                   end;
               end;
 
-            jobData := TJSONObject.Create(TJSONPair.Create('orders',TJSONValue(TJSONArray.Create)));
+
 
             if DtoVenda.Count > 0 then
               begin
@@ -138,16 +133,19 @@ begin
           end;
       end;
 
-      if conn_module.PostgreConnected then
+      if jobData.GetValue<TJSONArray>('orders').Count > 0 then
         begin
-          with conn_module.pgCmd do
+          if conn_module.PostgreConnected then
             begin
-              CommandText.Clear;
-              CommandText.Add('INSERT INTO jobservice.jobs_waiting '+
-               '(id, job_id, job_waiting_from, job_data, job_collected_at, job_status) '+
-               'VALUES(gen_random_uuid(), '+QuotedStr(pgJobID)+', now(), '+QuotedStr(jobData.ToJSON)+', null, ''W'');');
-              CommandText.SaveToFile(THelper.Functions.AppPath+'cmdInsert.sql');
-              Execute;
+              with conn_module.pgCmd do
+                begin
+                  CommandText.Clear;
+                  CommandText.Add('INSERT INTO jobservice.jobs_waiting '+
+                   '(id, job_id, job_waiting_from, job_data, job_collected_at, job_status) '+
+                   'VALUES(gen_random_uuid(), '+QuotedStr(pgJobID)+', now(), '+QuotedStr(jobData.ToJSON)+', null, ''W'');');
+                  //CommandText.SaveToFile(THelper.Functions.AppPath+'cmdInsert.sql');
+                  Execute;
+                end;
             end;
         end;
 
@@ -160,9 +158,12 @@ begin
           Sql.Add('WHERE job_collected_at is null and job_status = ''W''');
           Open;
         end;
+
+      Result := THelper.Functions.dataset_to_json('jobs_waiting', conn_module.pgQryList);
   except
     on e : Exception do
       begin
+        Result := TJSONObject(TJSONObject.ParseJSONValue('{"jobs_waiting":[]}'));
         var logger := Tlogger.Create;
         logger.LogMessage := 'COULD NOT GET JOBS FOR PRINTING';
         logger.LogDate := now;
@@ -173,6 +174,29 @@ begin
         logger.Destroy;
       end;
   end;
+end;
+
+function TjobCollector.getCurrentBD: Tactive_db;
+begin
+  Result := Self.ConnBD;
+end;
+
+function TjobCollector.getJobs: TJSONObject;
+begin
+  if not conn_module.PostgreConnected then
+    conn_module.ConnectPostgre;
+
+  with conn_module.pgQryList do
+    begin
+      Close;
+      Sql.Clear;
+      Sql.Add('SELECT id, job_id, job_waiting_from, job_data, job_collected_at, job_status');
+      Sql.Add('FROM jobservice.jobs_waiting');
+      Sql.Add('WHERE job_collected_at is null and job_status = ''W''');
+      Open;
+    end;
+
+  Result := THelper.Functions.dataset_to_json('jobs_waiting', conn_module.pgQryList);
 end;
 
 procedure TjobCollector.setClientConnection(aClient: String);
@@ -213,6 +237,20 @@ begin
     adbFirebird: ;
     adbSQLite: ;
   end;
+end;
+
+procedure TjobCollector.updateDtoVenda(id: String);
+begin
+  if not conn_module.MongoDBConnected then
+    conn_module.ConnectMongo(Self.ClientMongoConnection);
+
+  with conn_module.mongoUpdQry do
+    begin
+      Close;
+      Sql.Clear;
+      Sql.Text := '{"update":"DtoVenda", "updates":[{"q":{"_id": {"$oid":"'+id+'"}},"u":{"$set":{"Impresso":true}}}]}';
+      ExecSQL;
+    end;
 end;
 
 end.

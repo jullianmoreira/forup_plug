@@ -57,9 +57,9 @@ begin
     try
       fHelper := Tfunc_helper.Create;
       // Abre o arquivo de log em modo de escrita (append)
-      AssignFile(fileLog, fHelper.AppPath+LOGFILE);
+      AssignFile(fileLog, fHelper.AppPath+LOGDIR+LOGFILE);
       {$I-}
-      Append(fileLog);
+        Append(fileLog);
       {$I+}
       if IOResult <> 0 then
         begin

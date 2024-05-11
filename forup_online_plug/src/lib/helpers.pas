@@ -120,8 +120,31 @@ end;
 
 function Tfunc_helper.dataset_to_json(aName: String;
   aData: TDataSet): TJSONObject;
+var
+  objItem : TJSONObject;
+  aField : TField;
+  iField : Integer;
 begin
-
+  Result := TJSONObject.Create(TJSONPair.Create(aName, TJSONArray.Create));
+  with aData do
+    begin
+      if not IsEmpty then
+        begin
+          First;
+          while not Eof do
+            begin
+              objItem := TJSONObject.Create;
+              for iField := 0 to FieldCount-1 do
+                begin
+                  aField := Fields[iField];
+                  objItem.AddPair(TJSONPair.Create(aField.FieldName,
+                      aField.AsString));
+                end;
+              Result.GetValue<TJSONArray>(aName).AddElement(objItem);
+              Next;
+            end;
+        end;
+    end;
 end;
 
 function Tfunc_helper.InitEnv: Boolean;
@@ -201,12 +224,11 @@ begin
           aZip.ExtractAll(AppPath+CONN_CFG_DIR+'drv'+PathDelim+'mongo'+PathDelim+'lib64');
         end;
     {$ENDIF}
+    if Assigned(aResource) then
+      FreeAndNil(aResource);
+    if Assigned(aZip) then
+      FreeAndNil(aZip);
   {$ENDIF}
-
-  if Assigned(aResource) then
-    FreeAndNil(aResource);
-  if Assigned(aZip) then
-    FreeAndNil(aZip);
 end;
 
 function Tfunc_helper.mongoLib32: String;

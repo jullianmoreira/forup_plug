@@ -1,0 +1,181 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Import Condition="Exists('$(BDS)\bin\CodeGear.Deployment.targets')" Project="$(BDS)\bin\CodeGear.Deployment.targets"/>
+    <ProjectExtensions>
+        <ProjectFileVersion>12</ProjectFileVersion>
+    </ProjectExtensions>
+    <PropertyGroup>
+        <DeviceId Condition="'$(Platform)'=='Android'"/>
+        <DeviceId Condition="'$(Platform)'=='Android64'"/>
+        <DeviceId Condition="'$(Platform)'=='iOSDevice64'"/>
+        <DeviceId Condition="'$(Platform)'=='iOSSimARM64'"/>
+    </PropertyGroup>
+    <ItemGroup Condition="'$(Platform)'=='OSX64'"/>
+    <ItemGroup Condition="'$(Platform)'=='Win32'">
+        <DeployFile Include="Win32\Debug\forup_plug_svc.exe" Condition="'$(Config)'=='Debug'">
+            <RemoteDir>forup_plug_svc\</RemoteDir>
+            <RemoteName>forup_plug_svc.exe</RemoteName>
+            <DeployClass>ProjectOutput</DeployClass>
+            <Operation>0</Operation>
+            <LocalCommand/>
+            <RemoteCommand/>
+            <Overwrite>True</Overwrite>
+            <Required>True</Required>
+        </DeployFile>
+    </ItemGroup>
+    <ItemGroup Condition="'$(Platform)'=='Android64'"/>
+    <ItemGroup Condition="'$(Platform)'=='Android'"/>
+    <ItemGroup Condition="'$(Platform)'=='OSXARM64'"/>
+    <ItemGroup Condition="'$(Platform)'=='Win64'">
+        <DeployFile Include="res\pgsql.zip" Condition="'$(Config)'=='Debug'">
+            <RemoteDir>forup_plug_svc\</RemoteDir>
+            <RemoteName>pgsql.zip</RemoteName>
+            <DeployClass>ProjectFile</DeployClass>
+            <Operation>0</Operation>
+            <LocalCommand/>
+            <RemoteCommand/>
+            <Overwrite>True</Overwrite>
+        </DeployFile>
+        <DeployFile Include="res\mysql.zip" Condition="'$(Config)'=='Debug'">
+            <RemoteDir>forup_plug_svc\</RemoteDir>
+            <RemoteName>mysql.zip</RemoteName>
+            <DeployClass>ProjectFile</DeployClass>
+            <Operation>0</Operation>
+            <LocalCommand/>
+            <RemoteCommand/>
+            <Overwrite>True</Overwrite>
+        </DeployFile>
+        <DeployFile Include="res\mssql.zip" Condition="'$(Config)'=='Debug'">
+            <RemoteDir>forup_plug_svc\</RemoteDir>
+            <RemoteName>mssql.zip</RemoteName>
+            <DeployClass>ProjectFile</DeployClass>
+            <Operation>0</Operation>
+            <LocalCommand/>
+            <RemoteCommand/>
+            <Overwrite>True</Overwrite>
+        </DeployFile>
+        <DeployFile Include="Win64\Debug\forup_plug_svc.exe" Condition="'$(Config)'=='Debug'">
+            <RemoteDir>forup_plug_svc\</RemoteDir>
+            <RemoteName>forup_plug_svc.exe</RemoteName>
+            <DeployClass>ProjectOutput</DeployClass>
+            <Operation>0</Operation>
+            <LocalCommand/>
+            <RemoteCommand/>
+            <Overwrite>True</Overwrite>
+            <Required>True</Required>
+        </DeployFile>
+    </ItemGroup>
+    <ItemGroup Condition="'$(Platform)'=='Linux64'">
+        <DeployFile Include="res\pgsql.zip" Condition="'$(Config)'=='Release'">
+            <RemoteDir>forup_plug_svc\</RemoteDir>
+            <RemoteName>pgsql.zip</RemoteName>
+            <DeployClass>ProjectFile</DeployClass>
+            <Operation>0</Operation>
+            <LocalCommand/>
+            <RemoteCommand/>
+            <Overwrite>True</Overwrite>
+        </DeployFile>
+        <DeployFile Include="Linux64\Debug\forup_plug_svc" Condition="'$(Config)'=='Debug'">
+            <RemoteDir>forup_plug_svc\</RemoteDir>
+            <RemoteName>forup_plug_svc</RemoteName>
+            <DeployClass>ProjectOutput</DeployClass>
+            <Operation>1</Operation>
+            <LocalCommand/>
+            <RemoteCommand/>
+            <Overwrite>True</Overwrite>
+            <Required>True</Required>
+        </DeployFile>
+        <DeployFile Include="res\mysql.zip" Condition="'$(Config)'=='Debug'">
+            <RemoteDir>forup_plug_svc\</RemoteDir>
+            <RemoteName>mysql.zip</RemoteName>
+            <DeployClass>ProjectFile</DeployClass>
+            <Operation>0</Operation>
+            <LocalCommand/>
+            <RemoteCommand/>
+            <Overwrite>True</Overwrite>
+        </DeployFile>
+        <DeployFile Include="res\mysql.zip" Condition="'$(Config)'=='Release'">
+            <RemoteDir>forup_plug_svc\</RemoteDir>
+            <RemoteName>mysql.zip</RemoteName>
+            <DeployClass>ProjectFile</DeployClass>
+            <Operation>0</Operation>
+            <LocalCommand/>
+            <RemoteCommand/>
+            <Overwrite>True</Overwrite>
+        </DeployFile>
+        <DeployFile Include="res\mongodb_x64.zip" Condition="'$(Config)'=='Debug'">
+            <RemoteDir>forup_plug_svc\</RemoteDir>
+            <RemoteName>mongodb_x64.zip</RemoteName>
+            <DeployClass>ProjectFile</DeployClass>
+            <Operation>0</Operation>
+            <LocalCommand/>
+            <RemoteCommand/>
+            <Overwrite>True</Overwrite>
+        </DeployFile>
+        <DeployFile Include="res\mongodb_x64.zip" Condition="'$(Config)'=='Release'">
+            <RemoteDir>forup_plug_svc\</RemoteDir>
+            <RemoteName>mongodb_x64.zip</RemoteName>
+            <DeployClass>ProjectFile</DeployClass>
+            <Operation>0</Operation>
+            <LocalCommand/>
+            <RemoteCommand/>
+            <Overwrite>True</Overwrite>
+        </DeployFile>
+        <DeployFile Include="Linux64\Release\forup_plug_svc" Condition="'$(Config)'=='Release'">
+            <RemoteDir>forup_plug_svc\</RemoteDir>
+            <RemoteName>forup_plug_svc</RemoteName>
+            <DeployClass>ProjectOutput</DeployClass>
+            <Operation>1</Operation>
+            <LocalCommand/>
+            <RemoteCommand/>
+            <Overwrite>True</Overwrite>
+            <Required>True</Required>
+        </DeployFile>
+        <DeployFile Include="res\mongodb_x32.zip" Condition="'$(Config)'=='Debug'">
+            <RemoteDir>forup_plug_svc\</RemoteDir>
+            <RemoteName>mongodb_x32.zip</RemoteName>
+            <DeployClass>ProjectFile</DeployClass>
+            <Operation>0</Operation>
+            <LocalCommand/>
+            <RemoteCommand/>
+            <Overwrite>True</Overwrite>
+        </DeployFile>
+        <DeployFile Include="res\mongodb_x32.zip" Condition="'$(Config)'=='Release'">
+            <RemoteDir>forup_plug_svc\</RemoteDir>
+            <RemoteName>mongodb_x32.zip</RemoteName>
+            <DeployClass>ProjectFile</DeployClass>
+            <Operation>0</Operation>
+            <LocalCommand/>
+            <RemoteCommand/>
+            <Overwrite>True</Overwrite>
+        </DeployFile>
+        <DeployFile Include="res\pgsql.zip" Condition="'$(Config)'=='Debug'">
+            <RemoteDir>forup_plug_svc\</RemoteDir>
+            <RemoteName>pgsql.zip</RemoteName>
+            <DeployClass>ProjectFile</DeployClass>
+            <Operation>0</Operation>
+            <LocalCommand/>
+            <RemoteCommand/>
+            <Overwrite>True</Overwrite>
+        </DeployFile>
+        <DeployFile Include="res\mssql.zip" Condition="'$(Config)'=='Debug'">
+            <RemoteDir>forup_plug_svc\</RemoteDir>
+            <RemoteName>mssql.zip</RemoteName>
+            <DeployClass>ProjectFile</DeployClass>
+            <Operation>0</Operation>
+            <LocalCommand/>
+            <RemoteCommand/>
+            <Overwrite>True</Overwrite>
+        </DeployFile>
+        <DeployFile Include="res\mssql.zip" Condition="'$(Config)'=='Release'">
+            <RemoteDir>forup_plug_svc\</RemoteDir>
+            <RemoteName>mssql.zip</RemoteName>
+            <DeployClass>ProjectFile</DeployClass>
+            <Operation>0</Operation>
+            <LocalCommand/>
+            <RemoteCommand/>
+            <Overwrite>True</Overwrite>
+        </DeployFile>
+    </ItemGroup>
+    <ItemGroup Condition="'$(Platform)'=='iOSDevice64'"/>
+    <ItemGroup Condition="'$(Platform)'=='iOSSimARM64'"/>
+</Project>

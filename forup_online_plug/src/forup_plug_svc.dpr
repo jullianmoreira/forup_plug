@@ -1,5 +1,9 @@
 program forup_plug_svc;
 
+{$IFNDEF WINDOWS}
+  {$DEFINE HORSE_DAEMON}
+{$ENDIF}
+
 {$APPTYPE CONSOLE}
 
 {$R *.res}
@@ -10,6 +14,9 @@ uses
   System.SysUtils,
   System.DateUtils,
   System.Classes,
+  System.JSON,
+  Horse,
+  Horse.Jhonson,
   Uconn_module in 'connection\Uconn_module.pas' {conn_module: TDataModule},
   forup_types in 'lib\forup_types.pas',
   entity_base in 'entities\entity_base.pas',
@@ -30,9 +37,46 @@ begin
 
   if THelper.Functions.InitEnv then
     begin
-      collector := TjobCollector.Create(adbPostgres, '740', '64f2705f6b00c1f593efd30f');
-      collector.setClientConnection('19503009000143');
-      collector.getJobs;
+      THorse.Use(Jhonson('utf-8'));
+      THorse.Get('jobs/:lastone/:emprid/:cnpj',
+        procedure(Req: THorseRequest; Res: THorseResponse)
+          var
+            jobs : TJSONObject;
+          begin
+            //'64f2705f6b00c1f593efd30f'
+            //'19503009000143'
+            //collector.getCreateJobs;
+            collector := TjobCollector.Create(adbPostgres, Req.Params['lastone'], Req.Params['emprid']);
+            collector.setClientConnection(Req.Params['cnpj']);
+
+            jobs := collector.getJobs;
+            if jobs.GetValue<TJSONArray>('jobs_waiting').Count = 0 then
+              jobs := collector.getCreateJobs;
+
+            if jobs.GetValue<TJSONArray>('jobs_waiting').Count > 0 then
+              Res.Send<TJSONObject>(jobs)
+            else
+              begin
+                Res.Send<TJSONObject>(
+                  TJSONObject.Create(
+                    TJSONPair.Create(
+                      'jobs_waiting',
+                      TJSONArray.Create
+                    )
+                  )
+                );
+              end;
+
+            collector.Destroy;
+            //FreeAndNil(jobs);
+          end
+      );
+      {$IFDEF HORSE_DAEMON}
+        THorse.Port := 9090;
+        THorse.Listen;
+      {$ELSE}
+        THorse.Listen(9090);
+      {$ENDIF}
     end
   else
     begin
