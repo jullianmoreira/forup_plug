@@ -48,11 +48,9 @@ begin
             //collector.getCreateJobs;
             collector := TjobCollector.Create(adbPostgres, Req.Params['lastone'], Req.Params['emprid']);
             collector.setClientConnection(Req.Params['cnpj']);
-
             jobs := collector.getJobs;
             if jobs.GetValue<TJSONArray>('jobs_waiting').Count = 0 then
               jobs := collector.getCreateJobs;
-
             if jobs.GetValue<TJSONArray>('jobs_waiting').Count > 0 then
               Res.Send<TJSONObject>(jobs)
             else
@@ -66,7 +64,6 @@ begin
                   )
                 );
               end;
-
             collector.Destroy;
             //FreeAndNil(jobs);
           end

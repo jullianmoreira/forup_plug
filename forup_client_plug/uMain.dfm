@@ -775,10 +775,6 @@ object frmMain: TfrmMain
       Align = alClient
       Caption = 'Log de A'#231#245'es'
       TabOrder = 3
-      ExplicitLeft = 160
-      ExplicitTop = 328
-      ExplicitWidth = 185
-      ExplicitHeight = 105
       object memLog: TMemo
         Left = 2
         Top = 17
@@ -947,5 +943,10 @@ object frmMain: TfrmMain
       Caption = 'Fechar'
       OnClick = popCloseSystemClick
     end
+  end
+  object service: TTimer
+    Enabled = False
+    Left = 539
+    Top = 235
   end
 end

@@ -138,6 +138,7 @@
             <Form>frmMain</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="Job_Executor.pas"/>
         <RcItem Include="res\icons\icons8-esfera-verde-25.png">
             <ResourceType>RCDATA</ResourceType>
             <ResourceId>GREENSTS</ResourceId>

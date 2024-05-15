@@ -4,7 +4,8 @@ program forup_local_plug;
 
 uses
   Vcl.Forms,
-  uMain in 'uMain.pas' {frmMain};
+  uMain in 'uMain.pas' {frmMain},
+  Job_Executor in 'Job_Executor.pas';
 
 {$R *.res}
 
