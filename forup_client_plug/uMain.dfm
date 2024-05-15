@@ -765,6 +765,7 @@ object frmMain: TfrmMain
         StateCaptions.CaptionOn = 'Ligado'
         StateCaptions.CaptionOff = 'Desligado'
         TabOrder = 3
+        OnClick = switchLocalServiceClick
       end
     end
     object GroupBox2: TGroupBox
@@ -946,6 +947,7 @@ object frmMain: TfrmMain
   end
   object service: TTimer
     Enabled = False
+    OnTimer = serviceTimer
     Left = 539
     Top = 235
   end

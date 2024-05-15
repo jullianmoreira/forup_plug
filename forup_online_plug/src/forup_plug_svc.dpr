@@ -38,6 +38,14 @@ begin
   if THelper.Functions.InitEnv then
     begin
       THorse.Use(Jhonson('utf-8'));
+      THorse.Get('heartBeat',
+        procedure(Req: THorseRequest; Res: THorseResponse)
+          begin
+            Res.Send<TJSONObject>(TJSONObject.Create(TJSONPair.Create('message','I am alive')))
+          end
+        );
+
+
       THorse.Get('jobs/:lastone/:emprid/:cnpj',
         procedure(Req: THorseRequest; Res: THorseResponse)
           var
