@@ -1163,7 +1163,7 @@ object frmMain: TfrmMain
     PrintOptions.Printer = 'Default'
     PrintOptions.PrintOnSheet = 0
     ReportOptions.CreateDate = 45427.929719351900000000
-    ReportOptions.LastChange = 45427.981570497690000000
+    ReportOptions.LastChange = 45428.450812187500000000
     ScriptLanguage = 'PascalScript'
     ScriptText.Strings = (
       ''
@@ -1184,19 +1184,19 @@ object frmMain: TfrmMain
       end
       item
         Name = 'FILIAL_NAME'
-        Value = ''
+        Value = Null
       end
       item
         Name = 'FILIAL_ADDRESS'
-        Value = ''
+        Value = Null
       end
       item
         Name = 'FILIAL_CITY'
-        Value = ''
+        Value = Null
       end
       item
         Name = 'FILIAL_PHONE'
-        Value = ''
+        Value = Null
       end
       item
         Name = ' Order'
@@ -1204,39 +1204,39 @@ object frmMain: TfrmMain
       end
       item
         Name = 'ORDER_ID'
-        Value = ''
+        Value = Null
       end
       item
         Name = 'ORDER_CLIENT'
-        Value = ''
+        Value = Null
       end
       item
         Name = 'ORDER_CNPJ'
-        Value = ''
+        Value = Null
       end
       item
         Name = 'ORDER_CLI_ADDRESS'
-        Value = ''
+        Value = Null
       end
       item
         Name = 'ORDER_CLI_PHONE'
-        Value = ''
+        Value = Null
       end
       item
         Name = 'ORDER_DATE'
-        Value = ''
+        Value = Null
       end
       item
         Name = 'ORDER_VLRTOTAL'
-        Value = ''
+        Value = Null
       end
       item
         Name = 'ORDER_SHIPTOTAL'
-        Value = ''
+        Value = Null
       end
       item
         Name = 'ORDER_DESCTOTAL'
-        Value = ''
+        Value = Null
       end>
     Style = <>
     object Data: TfrxDataPage
@@ -1260,7 +1260,7 @@ object frmMain: TfrmMain
         FillGap.Bottom = 0
         FillGap.Right = 0
         Frame.Typ = []
-        Height = 162.519790000000000000
+        Height = 234.330860000000000000
         Top = 18.897650000000000000
         Width = 264.567100000000000000
         object Picture1: TfrxPictureView
@@ -10769,6 +10769,176 @@ object frmMain: TfrmMain
           Frame.Typ = [ftTop]
           Frame.Width = 1.500000000000000000
         end
+        object Memo23: TfrxMemoView
+          AllowVectorExport = True
+          Left = 2.000000000000000000
+          Top = 166.740260000000000000
+          Width = 90.708720000000000000
+          Height = 11.338590000000000000
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -9
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          Frame.Typ = [ftLeft, ftRight, ftTop, ftBottom]
+          Frame.Width = 0.500000000000000000
+          Memo.UTF8W = (
+            'CLIENTE')
+          ParentFont = False
+        end
+        object Memo24: TfrxMemoView
+          AllowVectorExport = True
+          Left = 2.000000000000000000
+          Top = 178.078850000000000000
+          Width = 90.708720000000000000
+          Height = 11.338590000000000000
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -9
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          Frame.Typ = [ftLeft, ftRight, ftTop, ftBottom]
+          Frame.Width = 0.500000000000000000
+          Memo.UTF8W = (
+            'CPF/CNPJ')
+          ParentFont = False
+        end
+        object Memo25: TfrxMemoView
+          AllowVectorExport = True
+          Left = 2.000000000000000000
+          Top = 189.417440000000000000
+          Width = 90.708720000000000000
+          Height = 11.338590000000000000
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -9
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          Frame.Typ = [ftLeft, ftRight, ftTop, ftBottom]
+          Frame.Width = 0.500000000000000000
+          Memo.UTF8W = (
+            'ENDERE'#199'O')
+          ParentFont = False
+        end
+        object Memo26: TfrxMemoView
+          AllowVectorExport = True
+          Left = 2.000000000000000000
+          Top = 200.756030000000000000
+          Width = 90.708720000000000000
+          Height = 11.338590000000000000
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -9
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          Frame.Typ = [ftLeft, ftRight, ftTop, ftBottom]
+          Frame.Width = 0.500000000000000000
+          Memo.UTF8W = (
+            'TELEFONE')
+          ParentFont = False
+        end
+        object Memo27: TfrxMemoView
+          AllowVectorExport = True
+          Left = 2.000000000000000000
+          Top = 212.094620000000000000
+          Width = 90.708720000000000000
+          Height = 11.338590000000000000
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -9
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          Frame.Typ = [ftLeft, ftRight, ftTop, ftBottom]
+          Frame.Width = 0.500000000000000000
+          Memo.UTF8W = (
+            'DATA DA COMPRA')
+          ParentFont = False
+        end
+        object Memo28: TfrxMemoView
+          AllowVectorExport = True
+          Left = 92.708720000000000000
+          Top = 166.740260000000000000
+          Width = 170.078850000000000000
+          Height = 11.338590000000000000
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -9
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          Frame.Typ = [ftLeft, ftRight, ftTop, ftBottom]
+          Frame.Width = 0.500000000000000000
+          Memo.UTF8W = (
+            '[ORDER_CLIENT]')
+          ParentFont = False
+        end
+        object Memo29: TfrxMemoView
+          AllowVectorExport = True
+          Left = 92.708720000000000000
+          Top = 178.078850000000000000
+          Width = 170.078850000000000000
+          Height = 11.338590000000000000
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -9
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          Frame.Typ = [ftLeft, ftRight, ftTop, ftBottom]
+          Frame.Width = 0.500000000000000000
+          Memo.UTF8W = (
+            '[ORDER_CNPJ]')
+          ParentFont = False
+        end
+        object Memo30: TfrxMemoView
+          AllowVectorExport = True
+          Left = 92.708720000000000000
+          Top = 189.417440000000000000
+          Width = 170.078850000000000000
+          Height = 11.338590000000000000
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -9
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          Frame.Typ = [ftLeft, ftRight, ftTop, ftBottom]
+          Frame.Width = 0.500000000000000000
+          Memo.UTF8W = (
+            '[ORDER_CLI_ADDRESS]')
+          ParentFont = False
+        end
+        object Memo31: TfrxMemoView
+          AllowVectorExport = True
+          Left = 92.708720000000000000
+          Top = 200.756030000000000000
+          Width = 170.078850000000000000
+          Height = 11.338590000000000000
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -9
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          Frame.Typ = [ftLeft, ftRight, ftTop, ftBottom]
+          Frame.Width = 0.500000000000000000
+          Memo.UTF8W = (
+            '[ORDER_CLI_PHONE]')
+          ParentFont = False
+        end
+        object Memo32: TfrxMemoView
+          AllowVectorExport = True
+          Left = 92.708720000000000000
+          Top = 212.094620000000000000
+          Width = 170.078850000000000000
+          Height = 11.338590000000000000
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -9
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          Frame.Typ = [ftLeft, ftRight, ftTop, ftBottom]
+          Frame.Width = 0.500000000000000000
+          Memo.UTF8W = (
+            '[ORDER_DATE]')
+          ParentFont = False
+        end
       end
       object MasterData1: TfrxMasterData
         FillType = ftBrush
@@ -10778,7 +10948,7 @@ object frmMain: TfrmMain
         FillGap.Right = 0
         Frame.Typ = []
         Height = 15.118120000000000000
-        Top = 294.803340000000000000
+        Top = 366.614410000000000000
         Width = 264.567100000000000000
         RowCount = 0
         object Memo11: TfrxMemoView
@@ -10865,7 +11035,7 @@ object frmMain: TfrmMain
         FillGap.Right = 0
         Frame.Typ = []
         Height = 30.236240000000000000
-        Top = 204.094620000000000000
+        Top = 275.905690000000000000
         Width = 264.567100000000000000
         object Memo7: TfrxMemoView
           AllowVectorExport = True
@@ -10968,7 +11138,7 @@ object frmMain: TfrmMain
         FillGap.Right = 0
         Frame.Typ = []
         Height = 71.811070000000000000
-        Top = 370.393940000000000000
+        Top = 442.205010000000000000
         Width = 264.567100000000000000
         object Memo15: TfrxMemoView
           AllowVectorExport = True

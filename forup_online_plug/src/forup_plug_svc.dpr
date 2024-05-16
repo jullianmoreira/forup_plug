@@ -45,7 +45,15 @@ begin
           end
         );
 
+      THorse.Get('cliente/:id/:cnpj',
+        procedure(Req: THorseRequest; Res: THorseResponse)
+          begin
+            collector := TjobCollector.Create(adbPostgres);
+            collector.setClientConnection(Req.Params['cnpj']);
 
+            Res.Send<TJSONObject>(collector.getCliente(Req.Params['id']));
+          end
+      );
       THorse.Post('updateJob',
         procedure(Req: THorseRequest; Res: THorseResponse)
           begin

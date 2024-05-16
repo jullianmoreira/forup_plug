@@ -19,4 +19,6 @@ sudo systemctl enable forup_plug.service
 sudo systemctl start forup_plug.service
 
 
-http://192.168.1.200:9090/jobs/740/64f2705f6b00c1f593efd30f/19503009000143
+http://192.168.1.200:9090/jobs/740/64f2705f6b00c1f593efd30f/19503009000143 
+
+http://localhost:9090/cliente/65d73f13907257b5fc5d390a/19503009000143

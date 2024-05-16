@@ -23,6 +23,7 @@ type
       procedure setClientConnection(aClient : String);
       function getCreateJobs : TJSONObject;
       function getJobs : TJSONObject;
+      function getCliente(id : String) : TJSONObject;
   end;
 
 implementation
@@ -60,6 +61,28 @@ begin
     end;
 
   inherited;
+end;
+
+function TjobCollector.getCliente(id: String): TJSONObject;
+begin
+  conn_module.ConnectMongo(Self.ClientMongoConnection);
+  Result := TJSONObject(TJSONObject.ParseJSONValue('{}'));
+  if conn_module.MongoDBConnected then
+    begin
+      with conn_module.mongoQryList do
+        begin
+          Close;
+          Sql.Clear;
+          Sql.Add('{"find":"DtoPessoa", "filter":{"_id": {"$oid": "'+id+'"}}}');
+          Open;
+
+          if not IsEmpty then
+            begin
+              First;
+              Result := TJSONObject(TJSONObject.ParseJSONValue(TMongoDocument(GetObject('DtoPessoa')).Text));
+            end;
+        end;
+    end;
 end;
 
 function TjobCollector.getCreateJobs: TJSONObject;
