@@ -1,7 +1,8 @@
 unit Job_Executor;
 
 interface
-uses System.SysUtils, System.Classes, System.Threading;
+uses System.SysUtils, System.Classes, System.Threading, Data.DB, FireDAC.Comp.Client,
+System.UITypes, System.JSON;
 
 var
   LocalServiceActive, OnlineServiceActive, SpoolerActive : Boolean;
@@ -106,5 +107,6 @@ begin
       Sleep(30000);
     end;
 end;
+
 
 end.

@@ -98,8 +98,6 @@ begin
                   end;
               end;
 
-
-
             if DtoVenda.Count > 0 then
               begin
                 DtoVendaProduto := TJSONArray.Create;

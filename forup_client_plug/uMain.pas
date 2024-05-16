@@ -7,11 +7,19 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.Menus, Vcl.Buttons, System.StrUtils,
   Vcl.Imaging.pngimage, Vcl.StdCtrls, System.ImageList, Vcl.ImgList, System.UITypes,
   Vcl.WinXCtrls, Vcl.Samples.Spin, System.IniFiles, System.IOUtils, Job_Executor,
-  Vcl.Printers, Winapi.WinSvc, Winapi.WinInet;
+  Vcl.Printers, Winapi.WinSvc, Winapi.WinInet, frxClass, frxDBSet, System.JSON,
+  FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Error, FireDAC.UI.Intf,
+  FireDAC.Phys.Intf, FireDAC.Stan.Def, FireDAC.Stan.Pool, FireDAC.Stan.Async,
+  FireDAC.Phys, FireDAC.VCLUI.Wait, Data.DB, FireDAC.Comp.Client,
+  FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteDef, FireDAC.Stan.ExprFuncs,
+  FireDAC.Phys.SQLiteWrapper.Stat;
 
 const
   FMT_LOGLINE = '%s -> %s -> %s';
   CFG_FILE = 'cfg.ini';
+  CLIENT_PATH = 'data';
+  REPORT_PATH = 'reports';
+  FILIAL_FILE = 'filial.json';
 
   INI_SECTION_LOCAL_CONFIG = 'LOCAL CONFIG';
   INI_OPTION_HOST = 'API_HOST';
@@ -27,6 +35,19 @@ const
 
 
 type
+  {$M+}
+  TplugReport = class(TObject)
+  private
+    FFileName: String;
+    FFullPath: String;
+    FExt: String;
+  public
+    constructor Create(aFullPath : String);
+  published
+    property FileName: String read FFileName write FFileName;
+    property Ext: String read FExt write FExt;
+    property FullPath: String read FFullPath write FFullPath;
+  end;
   TSvcStatus = (ssLocal, ssOnline, ssSpooler);
   TfrmMain = class(TForm)
     trayIcon: TTrayIcon;
@@ -64,6 +85,10 @@ type
     memLog: TMemo;
     Label8: TLabel;
     service: TTimer;
+    reports: TfrxReport;
+    repData: TfrxDBDataset;
+    conLocal: TFDConnection;
+    btUpdateConfig: TSpeedButton;
     procedure popShowFormClick(Sender: TObject);
     procedure trayIconDblClick(Sender: TObject);
     procedure btCloseFormClick(Sender: TObject);
@@ -72,9 +97,11 @@ type
     procedure FormCreate(Sender: TObject);
     procedure switchLocalServiceClick(Sender: TObject);
     procedure serviceTimer(Sender: TObject);
+    procedure btUpdateConfigClick(Sender: TObject);
   private
     { Private declarations }
     checkThread : TServiceChecker;
+    thisFilial : TJSONObject;
 
     function getFmtTime : String;
     function getURL_HeartBeat : String;
@@ -89,9 +116,16 @@ type
 
     procedure CheckEnviorment;
     procedure LoadPrinters;
+    procedure LoadReports;
+    procedure SetFilial;
+    procedure LocalCache;
   public
     { Public declarations }
     cfgFile : TIniFile;
+
+    procedure getJobs;
+    procedure loadToCache(jobs : TJSONObject);
+    procedure printOrder(order : TJSONObject);
 
     procedure CheckSpooler;
     procedure CallBackSpooler(isTrue : Boolean);
@@ -123,6 +157,19 @@ begin
   HideMe;
 end;
 
+procedure TfrmMain.btUpdateConfigClick(Sender: TObject);
+begin
+  try
+    btUpdateConfig.Enabled := false;
+    cfgFile.WriteString(INI_SECTION_LOCAL_CONFIG, INI_OPTION_DEFAULT_PRINTER, cbTicketPrinter.Text);
+    cfgFile.WriteString(INI_SECTION_LOCAL_CONFIG, INI_OPTION_DEFAULT_MODEL, cbPrintModel.Text);
+    cfgFile.WriteInteger(INI_SECTION_LOCAL_CONFIG, INI_OPTION_DEFAULT_TIMER, spPrintInterval.Value);
+    MessageDlg('Configuração Salva!',TMsgDlgType.mtInformation, [TMsgDlgBtn.mbOK], 0);
+  finally
+    btUpdateConfig.Enabled := true;
+  end;
+end;
+
 procedure TfrmMain.CallBackLocalService(isTrue: Boolean);
 begin
   setStatusImagem(ssLocal, IfThen(isTrue, GREEN_STATUS, RED_STATUS));
@@ -144,9 +191,21 @@ var
 begin
   cfgFile := getCFGFile;
 
+  if not TDirectory.Exists(getAppPath+CLIENT_PATH) then
+    TDirectory.CreateDirectory(getAppPath+CLIENT_PATH);
+  if not TDirectory.Exists(getAppPath+REPORT_PATH) then
+    TDirectory.CreateDirectory(getAppPath+REPORT_PATH);
+
+
   LoadPrinters;
+  LoadReports;
+
+  SetFilial;
+
+  LocalCache;
+
   timerVal := cfgFile.ReadInteger(INI_SECTION_LOCAL_CONFIG, INI_OPTION_DEFAULT_TIMER, 30);
-  service.Interval := timerVal;
+  service.Interval := timerVal*1000;
   spPrintInterval.Value := timerVal;
   service.Enabled := true;
 
@@ -332,6 +391,11 @@ begin
   Result := FormatDateTime('dd/mm/yyyy hh:mm:ss',now);
 end;
 
+procedure TfrmMain.getJobs;
+begin
+
+end;
+
 function TfrmMain.getURL_HeartBeat: String;
 var
   host : String;
@@ -361,6 +425,67 @@ begin
   cbTicketPrinter.ItemIndex := cbTicketPrinter.Items.IndexOf(defaultPrinter);
 end;
 
+procedure TfrmMain.LoadReports;
+var
+  aFile, aDefault : String;
+  aReport : TplugReport;
+  I: Integer;
+begin
+  cbPrintModel.Clear;
+  for aFile in TDirectory.GetFiles(getAppPath+REPORT_PATH) do
+    begin
+      aReport := TplugReport.Create(aFile);
+      cbPrintModel.AddItem(aReport.FileName, aReport);
+    end;
+
+  aDefault := cfgFile.ReadString(INI_SECTION_LOCAL_CONFIG, INI_OPTION_DEFAULT_MODEL, EmptyStr);
+
+  for I := 0 to cbPrintModel.Items.Count-1 do
+    begin
+      if TplugReport(cbPrintModel.Items.Objects[I]).FileName = aDefault then
+        begin
+          cbPrintModel.ItemIndex := I;
+          Break;
+        end;
+    end;
+end;
+
+procedure TfrmMain.loadToCache(jobs: TJSONObject);
+begin
+
+end;
+
+procedure TfrmMain.LocalCache;
+var
+  _localCache : TResourceStream;
+  database : String;
+begin
+  database := getAppPath+CLIENT_PATH+PathDelim+'localCache.db';
+  if not TFile.Exists(database) then
+    begin
+      _localCache := TResourceStream.Create(HInstance, 'LOCAL_CACHE', RT_RCDATA);
+      _localCache.SaveToFile(database);
+    end;
+
+  with conLocal do
+    begin
+      Close;
+      Params.Database := database;
+      Connected := true;
+
+      if Connected then
+        begin
+          memLog.Lines.Add(
+            Format(FMT_LOGLINE, [
+              getFmtTime,
+              'CACHE CONECTADO',
+              database
+            ])
+          );
+        end;
+    end;
+end;
+
 procedure TfrmMain.popCloseSystemClick(Sender: TObject);
 begin
   CloseMe;
@@ -369,6 +494,11 @@ end;
 procedure TfrmMain.popShowFormClick(Sender: TObject);
 begin
   ShowMe;
+end;
+
+procedure TfrmMain.printOrder(order: TJSONObject);
+begin
+
 end;
 
 procedure TfrmMain.serviceTimer(Sender: TObject);
@@ -382,6 +512,52 @@ begin
       if not DoingAction then
         begin
 
+        end;
+    end;
+end;
+
+procedure TfrmMain.SetFilial;
+var
+  clients : TStringStream;
+  jClients : TJSONArray;
+  filial : TJSONValue;
+  thisCNPJ : String;
+begin
+  if TFile.Exists(getAppPath+CLIENT_PATH+PathDelim+FILIAL_FILE) then
+    begin
+      clients := TStringStream.Create('',TEncoding.UTF8);
+      clients.LoadFromFile(getAppPath+CLIENT_PATH+PathDelim+FILIAL_FILE);
+      jClients := TJSONObject.ParseJSONValue(clients.DataString).GetValue<TJSONArray>('filial');
+      thisCNPJ := cfgFile.ReadString(INI_SECTION_LOCAL_CONFIG, INI_OPTION_CLIENT_CNPJ, EmptyStr);
+
+      for filial in jClients do
+        begin
+          if filial.GetValue<String>('CNPJ').Equals(thisCNPJ) then
+            begin
+              thisFilial := TJSONObject(filial);
+              break;
+            end;
+        end;
+      if thisFilial <> nil then
+        begin
+          cfgFile.WriteString(INI_SECTION_LOCAL_CONFIG, INI_OPTION_CLIENT_EMPR_ID, thisFilial.GetValue<String>('_id'));
+          memLog.Lines.Add(
+            Format(FMT_LOGLINE, [
+              getFmtTime,
+              'EMPRESA CARREGADA',
+              thisFilial.GetValue<String>('CNPJ')+' -> '+thisFilial.GetValue<String>('RazaoSocial')
+            ])
+          );
+        end
+      else
+        begin
+          memLog.Lines.Add(
+            Format(FMT_LOGLINE, [
+              getFmtTime,
+              'EMPRESA NÃO CARREGADA',
+              'CNPJ CONFIGURADO: '+thisCNPJ
+            ])
+          );
         end;
     end;
 end;
@@ -407,11 +583,22 @@ end;
 procedure TfrmMain.switchLocalServiceClick(Sender: TObject);
 begin
   StopService := (switchLocalService.State = tssOff);
+
 end;
 
 procedure TfrmMain.trayIconDblClick(Sender: TObject);
 begin
   ShowMe;
+end;
+
+{ TplugReport }
+
+constructor TplugReport.Create(aFullPath: String);
+begin
+  inherited Create;
+  Self.FFullPath := aFullPath;
+  Self.FExt := TPath.GetExtension(aFullPath);
+  Self.FFileName := TPath.GetFileNameWithoutExtension(aFullPath);
 end;
 
 end.
