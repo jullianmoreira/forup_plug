@@ -732,7 +732,7 @@ object frmMain: TfrmMain
         Caption = 'Segundos'
       end
       object btUpdateConfig: TSpeedButton
-        Left = 590
+        Left = 422
         Top = 73
         Width = 45
         Height = 45
@@ -934,6 +934,24 @@ object frmMain: TfrmMain
           FF00}
         OnClick = btUpdateConfigClick
       end
+      object btReimprimir: TSpeedButton
+        Left = 559
+        Top = 92
+        Width = 35
+        Height = 35
+        Caption = 't'
+        OnClick = btReimprimirClick
+      end
+      object Label9: TLabel
+        Left = 543
+        Top = 24
+        Width = 77
+        Height = 33
+        Alignment = taCenter
+        AutoSize = False
+        Caption = 'Reimprimir Pedido'
+        WordWrap = True
+      end
       object cbTicketPrinter: TComboBox
         Left = 15
         Top = 45
@@ -970,6 +988,13 @@ object frmMain: TfrmMain
         TabOrder = 3
         OnClick = switchLocalServiceClick
       end
+      object edtPediCodigo: TEdit
+        Left = 543
+        Top = 63
+        Width = 77
+        Height = 23
+        TabOrder = 4
+      end
     end
     object GroupBox2: TGroupBox
       Left = 1
@@ -987,7 +1012,7 @@ object frmMain: TfrmMain
         Align = alClient
         Lines.Strings = (
           'memLog')
-        ScrollBars = ssHorizontal
+        ScrollBars = ssBoth
         TabOrder = 0
       end
     end
@@ -1163,7 +1188,7 @@ object frmMain: TfrmMain
     PrintOptions.Printer = 'Default'
     PrintOptions.PrintOnSheet = 0
     ReportOptions.CreateDate = 45427.929719351900000000
-    ReportOptions.LastChange = 45428.450812187500000000
+    ReportOptions.LastChange = 45432.963124965280000000
     ScriptLanguage = 'PascalScript'
     ScriptText.Strings = (
       ''
@@ -1247,8 +1272,8 @@ object frmMain: TfrmMain
       PaperWidth = 80.000000000000000000
       PaperHeight = 297.000000000000000000
       PaperSize = 256
-      LeftMargin = 5.000000000000000000
-      RightMargin = 5.000000000000000000
+      LeftMargin = 1.000000000000000000
+      RightMargin = 1.000000000000000000
       TopMargin = 5.000000000000000000
       BottomMargin = 5.000000000000000000
       Frame.Typ = []
@@ -1260,9 +1285,9 @@ object frmMain: TfrmMain
         FillGap.Bottom = 0
         FillGap.Right = 0
         Frame.Typ = []
-        Height = 234.330860000000000000
+        Height = 238.110390000000000000
         Top = 18.897650000000000000
-        Width = 264.567100000000000000
+        Width = 294.803340000000000000
         object Picture1: TfrxPictureView
           AllowVectorExport = True
           Left = 92.598485000000000000
@@ -10688,9 +10713,9 @@ object frmMain: TfrmMain
           Height = 15.118120000000000000
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
-          Font.Height = -11
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
+          Font.Height = -13
+          Font.Name = 'Calibri'
+          Font.Style = []
           Frame.Typ = []
           HAlign = haCenter
           Memo.UTF8W = (
@@ -10704,8 +10729,8 @@ object frmMain: TfrmMain
           Height = 15.118120000000000000
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
-          Font.Height = -9
-          Font.Name = 'Arial'
+          Font.Height = -11
+          Font.Name = 'Calibri'
           Font.Style = []
           Frame.Typ = []
           HAlign = haCenter
@@ -10720,8 +10745,8 @@ object frmMain: TfrmMain
           Height = 15.118120000000000000
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
-          Font.Height = -9
-          Font.Name = 'Arial'
+          Font.Height = -11
+          Font.Name = 'Calibri'
           Font.Style = []
           Frame.Typ = []
           HAlign = haCenter
@@ -10736,8 +10761,8 @@ object frmMain: TfrmMain
           Height = 15.118120000000000000
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
-          Font.Height = -9
-          Font.Name = 'Arial'
+          Font.Height = -11
+          Font.Name = 'Calibri'
           Font.Style = []
           Frame.Typ = []
           HAlign = haCenter
@@ -10752,9 +10777,9 @@ object frmMain: TfrmMain
           Height = 15.118120000000000000
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
-          Font.Height = -11
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
+          Font.Height = -12
+          Font.Name = 'Calibri'
+          Font.Style = []
           Frame.Typ = []
           HAlign = haCenter
           Memo.UTF8W = (
@@ -10764,7 +10789,7 @@ object frmMain: TfrmMain
         object Line1: TfrxLineView
           AllowVectorExport = True
           Top = 154.960730000000000000
-          Width = 302.362204720000000000
+          Width = 268.346434720000000000
           Color = clBlack
           Frame.Typ = [ftTop]
           Frame.Width = 1.500000000000000000
@@ -10774,170 +10799,180 @@ object frmMain: TfrmMain
           Left = 2.000000000000000000
           Top = 166.740260000000000000
           Width = 90.708720000000000000
-          Height = 11.338590000000000000
+          Height = 13.228346460000000000
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
-          Font.Height = -9
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
+          Font.Height = -11
+          Font.Name = 'Calibri'
+          Font.Style = []
           Frame.Typ = [ftLeft, ftRight, ftTop, ftBottom]
           Frame.Width = 0.500000000000000000
           Memo.UTF8W = (
             'CLIENTE')
           ParentFont = False
+          VAlign = vaCenter
         end
         object Memo24: TfrxMemoView
           AllowVectorExport = True
           Left = 2.000000000000000000
-          Top = 178.078850000000000000
+          Top = 180.078850000000000000
           Width = 90.708720000000000000
-          Height = 11.338590000000000000
+          Height = 13.228346460000000000
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
-          Font.Height = -9
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
+          Font.Height = -11
+          Font.Name = 'Calibri'
+          Font.Style = []
           Frame.Typ = [ftLeft, ftRight, ftTop, ftBottom]
           Frame.Width = 0.500000000000000000
           Memo.UTF8W = (
             'CPF/CNPJ')
           ParentFont = False
+          VAlign = vaCenter
         end
         object Memo25: TfrxMemoView
           AllowVectorExport = True
           Left = 2.000000000000000000
-          Top = 189.417440000000000000
+          Top = 193.417440000000000000
           Width = 90.708720000000000000
-          Height = 11.338590000000000000
+          Height = 13.228346460000000000
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
-          Font.Height = -9
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
+          Font.Height = -11
+          Font.Name = 'Calibri'
+          Font.Style = []
           Frame.Typ = [ftLeft, ftRight, ftTop, ftBottom]
           Frame.Width = 0.500000000000000000
           Memo.UTF8W = (
             'ENDERE'#199'O')
           ParentFont = False
+          VAlign = vaCenter
         end
         object Memo26: TfrxMemoView
           AllowVectorExport = True
           Left = 2.000000000000000000
-          Top = 200.756030000000000000
+          Top = 206.756030000000000000
           Width = 90.708720000000000000
-          Height = 11.338590000000000000
+          Height = 13.228346460000000000
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
-          Font.Height = -9
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
+          Font.Height = -11
+          Font.Name = 'Calibri'
+          Font.Style = []
           Frame.Typ = [ftLeft, ftRight, ftTop, ftBottom]
           Frame.Width = 0.500000000000000000
           Memo.UTF8W = (
             'TELEFONE')
           ParentFont = False
+          VAlign = vaCenter
         end
         object Memo27: TfrxMemoView
           AllowVectorExport = True
           Left = 2.000000000000000000
-          Top = 212.094620000000000000
+          Top = 220.094620000000000000
           Width = 90.708720000000000000
-          Height = 11.338590000000000000
+          Height = 13.228346460000000000
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
-          Font.Height = -9
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
+          Font.Height = -11
+          Font.Name = 'Calibri'
+          Font.Style = []
           Frame.Typ = [ftLeft, ftRight, ftTop, ftBottom]
           Frame.Width = 0.500000000000000000
           Memo.UTF8W = (
             'DATA DA COMPRA')
           ParentFont = False
+          VAlign = vaCenter
         end
         object Memo28: TfrxMemoView
           AllowVectorExport = True
           Left = 92.708720000000000000
           Top = 166.740260000000000000
           Width = 170.078850000000000000
-          Height = 11.338590000000000000
+          Height = 13.228346460000000000
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
-          Font.Height = -9
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
+          Font.Height = -11
+          Font.Name = 'Calibri'
+          Font.Style = []
           Frame.Typ = [ftLeft, ftRight, ftTop, ftBottom]
           Frame.Width = 0.500000000000000000
           Memo.UTF8W = (
             '[ORDER_CLIENT]')
           ParentFont = False
+          VAlign = vaCenter
         end
         object Memo29: TfrxMemoView
           AllowVectorExport = True
           Left = 92.708720000000000000
-          Top = 178.078850000000000000
+          Top = 180.078850000000000000
           Width = 170.078850000000000000
-          Height = 11.338590000000000000
+          Height = 13.228346460000000000
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
-          Font.Height = -9
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
+          Font.Height = -11
+          Font.Name = 'Calibri'
+          Font.Style = []
           Frame.Typ = [ftLeft, ftRight, ftTop, ftBottom]
           Frame.Width = 0.500000000000000000
           Memo.UTF8W = (
             '[ORDER_CNPJ]')
           ParentFont = False
+          VAlign = vaCenter
         end
         object Memo30: TfrxMemoView
           AllowVectorExport = True
           Left = 92.708720000000000000
-          Top = 189.417440000000000000
+          Top = 193.417440000000000000
           Width = 170.078850000000000000
-          Height = 11.338590000000000000
+          Height = 13.228346460000000000
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
-          Font.Height = -9
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
+          Font.Height = -11
+          Font.Name = 'Calibri'
+          Font.Style = []
           Frame.Typ = [ftLeft, ftRight, ftTop, ftBottom]
           Frame.Width = 0.500000000000000000
           Memo.UTF8W = (
             '[ORDER_CLI_ADDRESS]')
           ParentFont = False
+          VAlign = vaCenter
         end
         object Memo31: TfrxMemoView
           AllowVectorExport = True
           Left = 92.708720000000000000
-          Top = 200.756030000000000000
+          Top = 206.756030000000000000
           Width = 170.078850000000000000
-          Height = 11.338590000000000000
+          Height = 13.228346460000000000
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
-          Font.Height = -9
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
+          Font.Height = -11
+          Font.Name = 'Calibri'
+          Font.Style = []
           Frame.Typ = [ftLeft, ftRight, ftTop, ftBottom]
           Frame.Width = 0.500000000000000000
           Memo.UTF8W = (
             '[ORDER_CLI_PHONE]')
           ParentFont = False
+          VAlign = vaCenter
         end
         object Memo32: TfrxMemoView
           AllowVectorExport = True
           Left = 92.708720000000000000
-          Top = 212.094620000000000000
+          Top = 220.094620000000000000
           Width = 170.078850000000000000
-          Height = 11.338590000000000000
+          Height = 13.228346460000000000
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
-          Font.Height = -9
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
+          Font.Height = -11
+          Font.Name = 'Calibri'
+          Font.Style = []
           Frame.Typ = [ftLeft, ftRight, ftTop, ftBottom]
           Frame.Width = 0.500000000000000000
           Memo.UTF8W = (
             '[ORDER_DATE]')
           ParentFont = False
+          VAlign = vaCenter
         end
       end
       object MasterData1: TfrxMasterData
@@ -10948,8 +10983,10 @@ object frmMain: TfrmMain
         FillGap.Right = 0
         Frame.Typ = []
         Height = 15.118120000000000000
-        Top = 366.614410000000000000
-        Width = 264.567100000000000000
+        Top = 370.393940000000000000
+        Width = 294.803340000000000000
+        DataSet = repData
+        DataSetName = 'ReportData'
         RowCount = 0
         object Memo11: TfrxMemoView
           AllowVectorExport = True
@@ -10959,10 +10996,9 @@ object frmMain: TfrmMain
           Font.Color = clBlack
           Font.Height = -8
           Font.Name = 'Arial'
-          Font.Style = [fsBold]
+          Font.Style = []
           Frame.Typ = [ftLeft, ftRight, ftTop, ftBottom]
           Frame.Width = 0.500000000000000000
-          HAlign = haCenter
           Memo.UTF8W = (
             '[ReportData."NomeItem"]')
           ParentFont = False
@@ -10976,8 +11012,8 @@ object frmMain: TfrmMain
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
           Font.Height = -8
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
+          Font.Name = 'Calibri'
+          Font.Style = []
           Frame.Typ = [ftLeft, ftRight, ftTop, ftBottom]
           Frame.Width = 0.500000000000000000
           HAlign = haCenter
@@ -10996,8 +11032,8 @@ object frmMain: TfrmMain
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
           Font.Height = -8
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
+          Font.Name = 'Calibri'
+          Font.Style = []
           Frame.Typ = [ftLeft, ftRight, ftTop, ftBottom]
           Frame.Width = 0.500000000000000000
           HAlign = haRight
@@ -11016,8 +11052,8 @@ object frmMain: TfrmMain
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
           Font.Height = -8
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
+          Font.Name = 'Calibri'
+          Font.Style = []
           Frame.Typ = [ftLeft, ftRight, ftTop, ftBottom]
           Frame.Width = 0.500000000000000000
           HAlign = haRight
@@ -11035,8 +11071,8 @@ object frmMain: TfrmMain
         FillGap.Right = 0
         Frame.Typ = []
         Height = 30.236240000000000000
-        Top = 275.905690000000000000
-        Width = 264.567100000000000000
+        Top = 279.685220000000000000
+        Width = 294.803340000000000000
         object Memo7: TfrxMemoView
           AllowVectorExport = True
           Top = 15.000000000000000000
@@ -11044,9 +11080,9 @@ object frmMain: TfrmMain
           Height = 15.118120000000000000
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
-          Font.Height = -8
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
+          Font.Height = -9
+          Font.Name = 'Calibri'
+          Font.Style = []
           Frame.Typ = [ftLeft, ftRight, ftTop, ftBottom]
           Frame.Width = 0.500000000000000000
           HAlign = haCenter
@@ -11063,9 +11099,9 @@ object frmMain: TfrmMain
           Height = 15.118120000000000000
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
-          Font.Height = -8
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
+          Font.Height = -9
+          Font.Name = 'Calibri'
+          Font.Style = []
           Frame.Typ = [ftLeft, ftRight, ftTop, ftBottom]
           Frame.Width = 0.500000000000000000
           HAlign = haCenter
@@ -11082,9 +11118,9 @@ object frmMain: TfrmMain
           Height = 15.118120000000000000
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
-          Font.Height = -8
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
+          Font.Height = -9
+          Font.Name = 'Calibri'
+          Font.Style = []
           Frame.Typ = [ftLeft, ftRight, ftTop, ftBottom]
           Frame.Width = 0.500000000000000000
           HAlign = haCenter
@@ -11101,9 +11137,9 @@ object frmMain: TfrmMain
           Height = 15.118120000000000000
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
-          Font.Height = -8
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
+          Font.Height = -9
+          Font.Name = 'Calibri'
+          Font.Style = []
           Frame.Typ = [ftLeft, ftRight, ftTop, ftBottom]
           Frame.Width = 0.500000000000000000
           HAlign = haCenter
@@ -11119,8 +11155,8 @@ object frmMain: TfrmMain
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
           Font.Height = -11
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
+          Font.Name = 'Calibri'
+          Font.Style = []
           Frame.Typ = [ftLeft, ftRight, ftTop, ftBottom]
           Frame.Width = 0.500000000000000000
           HAlign = haCenter
@@ -11138,8 +11174,8 @@ object frmMain: TfrmMain
         FillGap.Right = 0
         Frame.Typ = []
         Height = 71.811070000000000000
-        Top = 442.205010000000000000
-        Width = 264.567100000000000000
+        Top = 445.984540000000000000
+        Width = 294.803340000000000000
         object Memo15: TfrxMemoView
           AllowVectorExport = True
           Left = 190.756030000000000000
@@ -11150,8 +11186,8 @@ object frmMain: TfrmMain
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
           Font.Height = -9
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
+          Font.Name = 'Calibri'
+          Font.Style = []
           Frame.Typ = []
           Frame.Width = 0.500000000000000000
           HAlign = haRight
@@ -11168,7 +11204,7 @@ object frmMain: TfrmMain
           Font.Color = clBlack
           Font.Height = -8
           Font.Name = 'Arial'
-          Font.Style = [fsBold]
+          Font.Style = []
           Frame.Typ = []
           Frame.Width = 0.500000000000000000
           Memo.UTF8W = (
@@ -11186,8 +11222,8 @@ object frmMain: TfrmMain
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
           Font.Height = -9
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
+          Font.Name = 'Calibri'
+          Font.Style = []
           Frame.Typ = []
           Frame.Width = 0.500000000000000000
           HAlign = haRight
@@ -11205,7 +11241,7 @@ object frmMain: TfrmMain
           Font.Color = clBlack
           Font.Height = -8
           Font.Name = 'Arial'
-          Font.Style = [fsBold]
+          Font.Style = []
           Frame.Typ = []
           Frame.Width = 0.500000000000000000
           Memo.UTF8W = (
@@ -11223,8 +11259,8 @@ object frmMain: TfrmMain
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
           Font.Height = -9
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
+          Font.Name = 'Calibri'
+          Font.Style = []
           Frame.Typ = []
           Frame.Width = 0.500000000000000000
           HAlign = haRight
@@ -11240,9 +11276,9 @@ object frmMain: TfrmMain
           Height = 15.118120000000000000
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
-          Font.Height = -11
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
+          Font.Height = -12
+          Font.Name = 'Calibri'
+          Font.Style = []
           Frame.Typ = []
           HAlign = haCenter
           Memo.UTF8W = (
@@ -11252,7 +11288,7 @@ object frmMain: TfrmMain
         object Line2: TfrxLineView
           AllowVectorExport = True
           Top = 22.677180000000000000
-          Width = 302.362204720000000000
+          Width = 268.346456692913400000
           Color = clBlack
           Frame.Typ = [ftTop]
           Frame.Width = 1.500000000000000000
@@ -11266,7 +11302,7 @@ object frmMain: TfrmMain
           Font.Color = clBlack
           Font.Height = -8
           Font.Name = 'Arial'
-          Font.Style = [fsBold]
+          Font.Style = []
           Frame.Typ = []
           Frame.Width = 0.500000000000000000
           Memo.UTF8W = (
@@ -11281,8 +11317,8 @@ object frmMain: TfrmMain
           Height = 26.456710000000000000
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
-          Font.Height = -9
-          Font.Name = 'Arial'
+          Font.Height = -11
+          Font.Name = 'Calibri'
           Font.Style = []
           Frame.Typ = []
           HAlign = haCenter
@@ -11309,5 +11345,27 @@ object frmMain: TfrmMain
     LoginPrompt = False
     Left = 155
     Top = 435
+  end
+  object apiClient: TRESTClient
+    BaseURL = 
+      'http://localhost:9090/cliente/65d73f13907257b5fc5d390a/195030090' +
+      '00143'
+    Params = <>
+    SynchronizedEvents = False
+    Left = 456
+    Top = 464
+  end
+  object apiRequest: TRESTRequest
+    AssignedValues = [rvConnectTimeout, rvReadTimeout]
+    Client = apiClient
+    Params = <>
+    Response = apiResponse
+    SynchronizedEvents = False
+    Left = 440
+    Top = 512
+  end
+  object apiResponse: TRESTResponse
+    Left = 472
+    Top = 512
   end
 end

@@ -12,7 +12,8 @@ uses
   FireDAC.Phys.Intf, FireDAC.Stan.Def, FireDAC.Stan.Pool, FireDAC.Stan.Async,
   FireDAC.Phys, FireDAC.VCLUI.Wait, Data.DB, FireDAC.Comp.Client,
   FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteDef, FireDAC.Stan.ExprFuncs,
-  FireDAC.Phys.SQLiteWrapper.Stat, Datasnap.DBClient;
+  FireDAC.Phys.SQLiteWrapper.Stat, Datasnap.DBClient, REST.Types, REST.Client,
+  Data.Bind.Components, Data.Bind.ObjectScope, System.DateUtils;
 
 const
   FMT_LOGLINE = '%s -> %s -> %s';
@@ -89,6 +90,12 @@ type
     repData: TfrxDBDataset;
     conLocal: TFDConnection;
     btUpdateConfig: TSpeedButton;
+    apiClient: TRESTClient;
+    apiRequest: TRESTRequest;
+    apiResponse: TRESTResponse;
+    btReimprimir: TSpeedButton;
+    Label9: TLabel;
+    edtPediCodigo: TEdit;
     procedure popShowFormClick(Sender: TObject);
     procedure trayIconDblClick(Sender: TObject);
     procedure btCloseFormClick(Sender: TObject);
@@ -98,12 +105,15 @@ type
     procedure switchLocalServiceClick(Sender: TObject);
     procedure serviceTimer(Sender: TObject);
     procedure btUpdateConfigClick(Sender: TObject);
+    procedure btReimprimirClick(Sender: TObject);
   private
     { Private declarations }
     checkThread : TServiceChecker;
     thisFilial : TJSONObject;
 
     function concatStr(aData : TArray<String>) : String;
+    function coalesce(aData : TArray<String>) : String;
+    function fmtJsonDate(aDate : String) : String;
 
     function getFmtTime : String;
     function getURL_HeartBeat : String;
@@ -121,6 +131,9 @@ type
     procedure LoadReports;
     procedure SetFilial;
     procedure LocalCache;
+
+    function getClientData(id, cnpj : String) : TJSONObject;
+    function getJobsFromServer : TJSONObject;
   public
     { Public declarations }
     cfgFile : TIniFile;
@@ -334,6 +347,21 @@ begin
 
 end;
 
+function TfrmMain.coalesce(aData: TArray<String>): String;
+var
+  i: Integer;
+begin
+  Result := EmptyStr;
+  for i := Low(aData) to High(aData) do
+    begin
+      if aData[i] <> EmptyStr then
+        begin
+          Result := aData[i];
+          Break;
+        end;
+    end;
+end;
+
 function TfrmMain.concatStr(aData: TArray<String>): String;
 var
   i, icount : Integer;
@@ -342,6 +370,24 @@ begin
   Result := EmptyStr;
   for i := Low(aData) to High(aData) do
     Result := Result + aData[i];
+end;
+
+function TfrmMain.fmtJsonDate(aDate: String): String;
+var
+  date : String;
+  hour : String;
+  split : TStringList;
+begin
+  date := aDate.Substring(0, 10);
+  hour := aDate.Substring(11, aDate.Length);
+
+  split := TStringList.Create;
+  split.StrictDelimiter := true;
+  split.Delimiter := '-';
+  split.DelimitedText := date;
+
+  Result := Concat(split.Strings[2],'/',split.Strings[1],'/',split.Strings[0],' ',
+  hour);
 end;
 
 procedure TfrmMain.FormCreate(Sender: TObject);
@@ -381,10 +427,10 @@ begin
       FieldDefs.Clear;
       FieldDefList.Clear;
 
-      FieldDefs.Add('NomeItem', ftString, 255);
-      FieldDefs.Add('Qtde', ftFloat);
-      FieldDefs.Add('VlrUnit', ftFloat);
-      FieldDefs.Add('VlrItemTotal', ftFloat);
+      FieldDefs.Add('NomeItem', TFieldType.ftString , 255);
+      FieldDefs.Add('Qtde', TFieldType.ftFloat);
+      FieldDefs.Add('VlrUnit', TFieldType.ftFloat);
+      FieldDefs.Add('VlrItemTotal', TFieldType.ftFloat);
 
       CreateDataSet;
       Open;
@@ -420,12 +466,37 @@ begin
     end;
 end;
 
+function TfrmMain.getClientData(id, cnpj: String): TJSONObject;
+begin
+
+  apiClient.BaseURL := Concat(cfgFile.ReadString(INI_SECTION_LOCAL_CONFIG, INI_OPTION_HOST, 'http://localhost:9090'),
+  '/cliente/',
+  id,'/',cnpj);
+  apiRequest.Method := rmGET;
+  apiRequest.Execute;
+
+  if apiResponse.StatusCode = 200 then
+    begin
+      Result := TJSONObject(TJSONObject.ParseJSONValue(apiResponse.Content));
+    end
+  else
+    Result := TJSONObject.Create;
+
+  apiClient.Disconnect;
+
+end;
+
 function TfrmMain.getFmtTime: String;
 begin
   Result := FormatDateTime('dd/mm/yyyy hh:mm:ss',now);
 end;
 
 procedure TfrmMain.getJobs;
+begin
+
+end;
+
+function TfrmMain.getJobsFromServer: TJSONObject;
 begin
 
 end;
@@ -438,7 +509,7 @@ begin
   Result := EmptyStr;
   if host <> EmptyStr then
     begin
-      Result := host+'/heartBeat';
+      Result := concat(host,'/heartBeat');
     end;
 end;
 
@@ -534,9 +605,14 @@ procedure TfrmMain.printOrder(order: TJSONObject);
 var
   cdsItens : TClientDataSet;
   order_item : TJSONValue;
+  cliente : TJSONObject;
+  strTeste, orderID, orderDate, orderClient : String;
+
+  printStart, printFinish : TDateTime;
 begin
   if order <> nil then
     begin
+      printStart := now;
       cdsItens := getCDSItens;
       for order_item in order.GetValue<TJSONArray>('DtoVendaProduto') do
         begin
@@ -553,34 +629,61 @@ begin
         begin
           Clear;
           LoadFromFile(TplugReport(cbPrintModel.Items.Objects[cbPrintModel.ItemIndex]).FullPath);
-          Variables['FILIAL_NAME'] := thisFilial.GetValue<String>('RazaoSocial');
-          Variables['FILIAL_ADDRESS'] := concatStr([
+          Variables['FILIAL_NAME'] := QuotedStr(thisFilial.GetValue<String>('RazaoSocial'));
+          Variables['FILIAL_ADDRESS'] := QuotedStr(concatStr([
             thisFilial.GetValue<String>('Logradouro'),', ',
             thisFilial.GetValue<String>('Numero')
-          ]);
-          Variables['FILIAL_CITY'] := concatStr([
+          ]));
+          Variables['FILIAL_CITY'] := QuotedStr(concatStr([
             thisFilial.GetValue<String>('Bairro'),' - ',
             thisFilial.GetValue<String>('Cidade'),'-',
             thisFilial.GetValue<String>('UF')
-          ]);
-          Variables['FILIAL_PHONE'] := thisFilial.GetValue<String>('Telefone');
-          Variables['ORDER_ID'] := order.GetValue<TJSONValue>('Codigo').GetValue<String>('$numberLong');
+          ]));
+          Variables['FILIAL_PHONE'] := QuotedStr(thisFilial.GetValue<String>('Telefone'));
+
+          orderID := concat(order.GetValue<String>('DtoVenda._id.$oid').ToLower,
+           ' (',order.GetValue<String>('DtoVenda.Codigo.$numberLong'),') ');
+          Variables['ORDER_ID'] := QuotedStr(order.GetValue<String>('DtoVenda.Codigo.$numberLong'));
 
           //Chamar o Cliente aqui
-          Variables['ORDER_CLIENT'] := order.GetValue<String>('Cliente');
-          Variables['ORDER_CNPJ'] := order.GetValue<String>('CNPJ_CPF');
-          Variables['ORDER_CLI_ADDRESS'] := concatStr([
-             order.GetValue<String>('Logradouro'),', ',
-             order.GetValue<String>('LogradouroNumero'),' - ',
-             order.GetValue<String>('Bairro')
-          ]);
-          Variables['ORDER_PHONE'] := order.GetValue<String>('Telefone');
+          cliente := getClientData(order.GetValue<String>('DtoVenda.ClienteId'),
+            cfgFile.ReadString(INI_SECTION_LOCAL_CONFIG, INI_OPTION_CLIENT_CNPJ, ''));
 
+          if cliente.TryGetValue<String>('Cliente', strTeste) then
+            begin
+              orderClient := coalesce([cliente.GetValue<String>('NomeFantasia'),
+              cliente.GetValue<String>('RazaoSocial')]);
+              Variables['ORDER_CLIENT'] := QuotedStr(orderClient);
 
-          Variables['ORDER_DATE'] := order.GetValue<TJSONValue>('Data').GetValue<String>('$date');
-          Variables['ORDER_VLRTOTAL'] := order.GetValue<Extended>('ValorFinal');
-          Variables['ORDER_VLRSHIPTOTAL'] := order.GetValue<Extended>('ValorFrete');
-          Variables['ORDER_DESCTOTAL'] := order.GetValue<Extended>('DescontoDinheiro');
+              Variables['ORDER_CNPJ'] := QuotedStr(cliente.GetValue<String>('CNPJ_CPF'));
+              Variables['ORDER_CLI_ADDRESS'] := QuotedStr(concatStr([
+                 cliente.GetValue<String>('Logradouro'),', ',
+                 cliente.GetValue<String>('LogradouroNumero'),' - ',
+                 cliente.GetValue<String>('Bairro')
+              ]));
+              Variables['ORDER_PHONE'] := QuotedStr(cliente.GetValue<String>('Telefone'));
+            end;
+
+          orderDate := fmtJsonDate(order.GetValue<TJSONValue>('DtoVenda.Data').GetValue<String>('$date'));
+          Variables['ORDER_DATE'] := QuotedStr(orderDate);
+
+          Variables['ORDER_VLRTOTAL'] := order.GetValue<Extended>('DtoVenda.ValorFinal');
+          Variables['ORDER_SHIPTOTAL'] := order.GetValue<Extended>('DtoVenda.ValorFrete');
+          Variables['ORDER_DESCTOTAL'] := order.GetValue<Extended>('DtoVenda.DescontoDinheiro');
+
+          PrintOptions.ShowDialog := false;
+          PrintOptions.Printer := cbTicketPrinter.Text;
+          PrintOptions.PrintMode := TfrxPrintMode.pmDefault;
+          PrintOptions.Copies := 1;
+
+          PrepareReport(true);
+          Print;
+          printFinish := now;
+          memLog.Lines.Add(Format(FMT_LOGLINE,[
+            getFmtTime+' - Imprimindo Pedido: '+orderID,
+            'Cliente: '+orderClient+' | Data: '+orderDate,
+            'Tempo gasto: '+SecondsBetween(printStart, printFinish).ToString+' seg.'
+          ]));
         end;
 
     end;
@@ -663,6 +766,31 @@ end;
 procedure TfrmMain.ShowMe;
 begin
   Self.Show;
+end;
+
+procedure TfrmMain.btReimprimirClick(Sender: TObject);
+var
+  jobs_waiting, orders : TJSONArray;
+  job, order : TJSONValue;
+  job_data : TJSONObject;
+  strRead : TStringStream;
+begin
+  strRead := TStringStream.Create(EmptyStr, TEncoding.UTF8);
+  strRead.LoadFromFile(concat(getAppPath, PathDelim, CLIENT_PATH, PathDelim, 'jobservice.json'));
+
+  jobs_waiting := TJSONObject.ParseJSONValue(strRead.DataString).GetValue<TJSONArray>('jobs_waiting');
+  for job in jobs_waiting do
+    begin
+      //updateJOB
+      job_data := TJSONObject(TJSONObject.ParseJSONValue(job.GetValue<String>('job_data')));
+      orders := job_data.GetValue<TJSONArray>('orders');
+
+      for order in orders do
+        begin
+          printOrder(TJSONObject(order));
+        end;
+    end;
+
 end;
 
 procedure TfrmMain.switchLocalServiceClick(Sender: TObject);

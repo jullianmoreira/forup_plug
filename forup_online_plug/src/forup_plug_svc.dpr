@@ -61,13 +61,6 @@ begin
           end
       );
 
-      THorse.Post('updateOrders',
-        procedure(Req: THorseRequest; Res: THorseResponse)
-          begin
-
-          end
-      );
-
       THorse.Get('jobs/:lastone/:emprid/:cnpj',
         procedure(Req: THorseRequest; Res: THorseResponse)
           var
