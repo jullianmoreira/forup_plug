@@ -11,7 +11,7 @@ sudo chmod -R 777 /opt/forup
 sudo cp ~/PAServer.service /etc/systemd/system
 sudo cp ~/forup/plugsvc/release/forup_plug.service /etc/systemd/system/
 sudo cp ~/forup/plugsvc/release/forup_plug_svc /opt/forup/plugsvc/
-sudo chmod -777 /opt/forup/plugsvc/forup_plug_svc
+sudo chmod 777 /opt/forup/plugsvc/forup_plug_svc
 
 #mongo client
 sudo apt install libmongoc-1.0-0t64 libmongoclient-dev
@@ -30,6 +30,10 @@ http://localhost:9090/cliente/65d73f13907257b5fc5d390a/19503009000143
 =======
 http://192.168.1.200:9090/jobs/700/64f2705f6b00c1f593efd30f/19503009000143
 >>>>>>> Stashed changes
+
+#NOIP DUC
+https://www.noip.com/support/knowledgebase/install-linux-3-x-dynamic-update-client-duc#install_from_source
+https://www.noip.com/support/knowledgebase/running-linux-duc-v3-0-startup-2
 
 
 

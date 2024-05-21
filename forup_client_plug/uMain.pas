@@ -138,6 +138,7 @@ type
     { Public declarations }
     cfgFile : TIniFile;
 
+    procedure LimparLog;
     procedure getJobs;
     procedure loadToCache(jobs : TJSONObject);
     procedure printOrder(order : TJSONObject);
@@ -239,6 +240,7 @@ end;
 
 procedure TfrmMain.CheckLocarService;
 begin
+  LimparLog;
   LocalServiceActive := false;
   LocalServiceActive := service.Enabled;
 end;
@@ -254,42 +256,59 @@ var
 begin
   OnlineServiceActive := false;
   URL := getURL_HeartBeat;
-  if URL.IsEmpty then
-    begin
-      memLog.Lines.Add(Format(
-        FMT_LOGLINE, [
-          getFmtTime, 'CHECAGEM DO HOST', 'Sem configuração de Host do Serviço Online'
-        ]
-      ));
-    end
-  else
-    begin
-      // Verifica se há conexão com a internet local
-      dwAccessType := INTERNET_OPEN_TYPE_DIRECT;
-      hInternet := InternetOpen(nil, dwAccessType, nil, nil, 0);
-      if hInternet <> nil then
+  try
+    LimparLog;
+    if URL.IsEmpty then
       begin
-        // Abre uma conexão com o URL especificado
-        dwFlags := 0;
-        lpszUserAgent := nil;
-        hConnect := InternetOpenUrl(hInternet, PChar(URL), nil, 0, dwFlags, 0);
-        if hConnect <> nil then
+        memLog.Lines.Add(Format(
+          FMT_LOGLINE, [
+            getFmtTime, 'CHECAGEM DO HOST', 'Sem configuração de Host do Serviço Online'
+          ]
+        ));
+      end
+    else
+      begin
+        // Verifica se há conexão com a internet local
+        dwAccessType := INTERNET_OPEN_TYPE_DIRECT;
+        hInternet := InternetOpen(nil, dwAccessType, nil, nil, 0);
+        if hInternet <> nil then
         begin
-          setStatusImagem(ssOnline, GREEN_STATUS);
-          OnlineServiceActive := true;
-          InternetCloseHandle(hConnect);
+          // Abre uma conexão com o URL especificado
+          dwFlags := 0;
+          lpszUserAgent := nil;
+          hConnect := InternetOpenUrl(hInternet, PChar(URL), nil, 0, dwFlags, 0);
+          if hConnect <> nil then
+          begin
+            setStatusImagem(ssOnline, GREEN_STATUS);
+            OnlineServiceActive := true;
+            InternetCloseHandle(hConnect);
+          end
+          else
+            begin
+              setStatusImagem(ssOnline, RED_STATUS); // O serviço não está respondendo
+              InternetCloseHandle(hInternet);
+              memLog.Lines.Add(Format(
+                FMT_LOGLINE, [
+                  getFmtTime, 'CHECAGEM DO HOST', 'Sem resposta de: "'+URL+'"'
+                ]
+              ));
+            end;
         end
         else
-          setStatusImagem(ssOnline, RED_STATUS); // O serviço não está respondendo
-        InternetCloseHandle(hInternet);
-      end
-      else
+          memLog.Lines.Add(Format(
+          FMT_LOGLINE, [
+            getFmtTime, 'CHECAGEM DO HOST', 'Sem conexão com a internet'
+          ]
+        ));
+      end;
+  except
+    on e : exception do
+      begin
         memLog.Lines.Add(Format(
-        FMT_LOGLINE, [
-          getFmtTime, 'CHECAGEM DO HOST', 'Sem conexão com a internet'
-        ]
-      ));
-    end;
+          FMT_LOGLINE, [
+            getFmtTime, 'CHECAGEM DO HOST', 'Erro: '+e.Message]));
+      end;
+  end;
 end;
 
 procedure TfrmMain.CheckSpooler;
@@ -300,41 +319,51 @@ var
 begin
   SpoolerActive := false;
   ServiceManager := OpenSCManager(nil, nil, SC_MANAGER_CONNECT);
-  if ServiceManager <> 0 then
-  begin
-    // Abre o serviço de spooler
-    ServiceHandle := OpenService(ServiceManager, 'Spooler', SERVICE_QUERY_STATUS);
-    if ServiceHandle <> 0 then
+  try
+    LimparLog;
+    if ServiceManager <> 0 then
     begin
-      // Verifica o status do serviço
-      if QueryServiceStatus(ServiceHandle, ServiceStatus) then
+      // Abre o serviço de spooler
+      ServiceHandle := OpenService(ServiceManager, 'Spooler', SERVICE_QUERY_STATUS);
+      if ServiceHandle <> 0 then
       begin
-        case ServiceStatus.dwCurrentState of
-          {SERVICE_STOPPED, SERVICE_PAUSED, SERVICE_START_PENDING,
-          SERVICE_STOP_PENDING, SERVICE_CONTINUE_PENDING, SERVICE_PAUSE_PENDING:}
-          SERVICE_RUNNING: begin
-            SpoolerActive := true;
+        // Verifica o status do serviço
+        if QueryServiceStatus(ServiceHandle, ServiceStatus) then
+        begin
+          case ServiceStatus.dwCurrentState of
+            {SERVICE_STOPPED, SERVICE_PAUSED, SERVICE_START_PENDING,
+            SERVICE_STOP_PENDING, SERVICE_CONTINUE_PENDING, SERVICE_PAUSE_PENDING:}
+            SERVICE_RUNNING: begin
+              SpoolerActive := true;
+            end;
           end;
-        end;
+        end
+        else
+          memLog.Lines.Add(Format(FMT_LOGLINE,[
+            getFmtTime, 'CHECAGEM DE SPOOLER', 'Erro ao consultar o status do Spooler de Impressão'])
+          );
+        // Fecha o handle do serviço
+        CloseServiceHandle(ServiceHandle);
       end
       else
         memLog.Lines.Add(Format(FMT_LOGLINE,[
-          getFmtTime, 'CHECAGEM DE SPOOLER', 'Erro ao consultar o status do Spooler de Impressão'])
-        );
-      // Fecha o handle do serviço
-      CloseServiceHandle(ServiceHandle);
+            getFmtTime, 'CHECAGEM DE SPOOLER', 'Erro ao abrir o serviço de spooler'])
+          );
+      // Fecha o gerenciador de serviços
+      CloseServiceHandle(ServiceManager);
     end
     else
       memLog.Lines.Add(Format(FMT_LOGLINE,[
-          getFmtTime, 'CHECAGEM DE SPOOLER', 'Erro ao abrir o serviço de spooler'])
-        );
-    // Fecha o gerenciador de serviços
-    CloseServiceHandle(ServiceManager);
-  end
-  else
-    memLog.Lines.Add(Format(FMT_LOGLINE,[
-          getFmtTime, 'CHECAGEM DE SPOOLER', 'Erro ao abrir o gerenciador de serviços'])
-        );
+            getFmtTime, 'CHECAGEM DE SPOOLER', 'Erro ao abrir o gerenciador de serviços'])
+          );
+  except
+    on e : exception do
+      begin
+        memLog.Lines.Add(Format(FMT_LOGLINE,[
+            getFmtTime, 'CHECAGEM DE SPOOLER', 'Erro: '+e.Message])
+          );
+      end;
+  end;
 end;
 
 procedure TfrmMain.CloseMe;
@@ -516,6 +545,12 @@ end;
 procedure TfrmMain.HideMe;
 begin
   Self.Hide;
+end;
+
+procedure TfrmMain.LimparLog;
+begin
+  if memLog.Lines.Count >= 200 then
+    memLog.Lines.Clear;
 end;
 
 procedure TfrmMain.LoadPrinters;

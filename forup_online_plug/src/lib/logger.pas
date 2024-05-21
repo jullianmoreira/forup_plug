@@ -29,6 +29,14 @@ type
     property LogAdditionaInfo: TJSONValue read FLogAdditionaInfo write FLogAdditionaInfo;
   end;
 
+  TSingleLogger = class
+    private
+      class var _Logger : Tlogger;
+    public
+      class function Logger : Tlogger;
+
+  end;
+
 implementation
 uses helpers;
 { Tlogger }
@@ -89,6 +97,16 @@ begin
     // Sai da seção crítica
     FLock.Leave;
   end;
+end;
+
+{ TSingleLogger }
+
+class function TSingleLogger.Logger: Tlogger;
+begin
+  if not Assigned(_Logger) then
+    _Logger := Tlogger.Create;
+
+  Result := _Logger;
 end;
 
 end.

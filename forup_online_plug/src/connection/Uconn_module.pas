@@ -65,18 +65,28 @@ begin
     pg_driver.VendorLib := (THelper.Functions.AppPath+CONN_CFG_DIR+PG_DRV);
     pg_driver.VendorLib := StringReplace(pg_driver.VendorLib, PathDelim+PathDelim, PathDelim, [rfReplaceAll]);
   {$ENDIF}
-  if not fup_manager.ConnectionDefFileLoaded then
-    begin
-      fup_manager.Active := false;
-      fup_manager.ConnectionDefFileName := THelper.Functions.AppPath+CONN_CFG_DIR+CONN_CFG_FILE;
-      fup_manager.LoadConnectionDefFile;
-      fup_manager.Active := true;
-    end;
+  try
+    if not fup_manager.ConnectionDefFileLoaded then
+      begin
+        fup_manager.Active := false;
+        fup_manager.ConnectionDefFileName := THelper.Functions.AppPath+CONN_CFG_DIR+CONN_CFG_FILE;
+        fup_manager.LoadConnectionDefFile;
+        fup_manager.Active := true;
+      end;
+  except
+    on e : exception do
+      begin
+        TSingleLogger.Logger.LogMessage := 'CAN NOT START CONNECTION MANAGER';
+        TSingleLogger.Logger.LogDate := now;
+        TSingleLogger.Logger.LogID := '007';
+        TSingleLogger.Logger.LogAdditionaInfo := TJSONObject.ParseJSONValue('{"exception_message":"'+
+            THelper.Functions.prepare_string_json(e.Message)+'"}');
+        TSingleLogger.Logger.writeLog;
+      end;
+  end;
 end;
 
 procedure Tconn_module.ConnectMongo(aConnection: TJSONValue);
-var
-  log : Tlogger;
 begin
   if aConnection <> nil then
     begin
@@ -105,14 +115,12 @@ begin
           except
             on e : Exception do
               begin
-                log := Tlogger.Create;
-                log.LogMessage := 'COULD NOT CONNECT ON MONGODB';
-                log.LogDate := now;
-                log.LogID := '003';
-                log.LogAdditionaInfo := TJSONObject.ParseJSONValue('{"exception_message":"'+
+                TSingleLogger.Logger.LogMessage := 'COULD NOT CONNECT ON MONGODB';
+                TSingleLogger.Logger.LogDate := now;
+                TSingleLogger.Logger.LogID := '003';
+                TSingleLogger.Logger.LogAdditionaInfo := TJSONObject.ParseJSONValue('{"exception_message":"'+
                     THelper.Functions.prepare_string_json(e.Message)+'"}');
-                log.writeLog;
-                log.Destroy;
+                TSingleLogger.Logger.writeLog;
               end;
           end;
         end;
@@ -120,8 +128,6 @@ begin
 end;
 
 procedure Tconn_module.ConnectPostgre;
-var
-  logger : Tlogger;
 begin
   try
     with fup_postgre do
@@ -135,14 +141,13 @@ begin
   except
     on e : exception do
       begin
-        logger := Tlogger.Create;
-        logger.LogID := '0002';
-        logger.LogMessage := 'COULD NOT CONNECT ON POSTGRE DATABASE';
-        logger.LogDate := Now;
-        logger.LogAdditionaInfo := TJSONObject.ParseJSONValue('{"exception_message":"'+
+        TSingleLogger.Logger.LogID := '0002';
+        TSingleLogger.Logger.LogMessage := 'COULD NOT CONNECT ON POSTGRE DATABASE';
+        TSingleLogger.Logger.LogDate := Now;
+        TSingleLogger.Logger.LogAdditionaInfo := TJSONObject.ParseJSONValue('{"exception_message":"'+
           THelper.Functions.prepare_string_json(e.Message)+'"}');
-        logger.writeLog;
-        logger.Destroy;
+        TSingleLogger.Logger.writeLog;
+
       end;
   end;
 end;
@@ -155,18 +160,49 @@ end;
 
 procedure Tconn_module.DisconnectMongo;
 begin
-
-end;
-
-procedure Tconn_module.DisconnectPostgre;
-begin
-  with fup_postgre do
+  MongoDBConnected := False;
+  try
+  with fup_mongo do
     begin
       if InTransaction then
         Commit;
 
       Close;
     end;
+  except
+    on e : Exception do
+      begin
+        TSingleLogger.Logger.LogID := '0005';
+        TSingleLogger.Logger.LogMessage := 'COULD NOT DISCONNECT FROM MONGO DATABASE';
+        TSingleLogger.Logger.LogDate := Now;
+        TSingleLogger.Logger.LogAdditionaInfo := TJSONObject.ParseJSONValue('{"exception_message":"'+
+          THelper.Functions.prepare_string_json(e.Message)+'"}');
+        TSingleLogger.Logger.writeLog;
+      end;
+  end;
+end;
+
+procedure Tconn_module.DisconnectPostgre;
+begin
+  try
+    with fup_postgre do
+      begin
+        if InTransaction then
+          Commit;
+
+        Close;
+      end;
+  except
+    on e : exception do
+      begin
+        TSingleLogger.Logger.LogID := '0006';
+        TSingleLogger.Logger.LogMessage := 'COULD NOT DISCONNECT FROM POSTGRE DATABASE';
+        TSingleLogger.Logger.LogDate := Now;
+        TSingleLogger.Logger.LogAdditionaInfo := TJSONObject.ParseJSONValue('{"exception_message":"'+
+          THelper.Functions.prepare_string_json(e.Message)+'"}');
+        TSingleLogger.Logger.writeLog;
+      end;
+  end;
 end;
 
 end.

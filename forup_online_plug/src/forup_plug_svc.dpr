@@ -30,11 +30,8 @@ uses
   job_listner in 'job_resource\job_listner.pas';
 
 var
-  fLogger : Tlogger;
   collector : TjobCollector;
 begin
-  fLogger := Tlogger.Create;
-
   if THelper.Functions.InitEnv then
     begin
       THorse.Use(Jhonson('utf-8'));
@@ -100,10 +97,10 @@ begin
     end
   else
     begin
-      fLogger.LogMessage := 'COULD NOT CONFIGURE ENVIORMENT';
-      fLogger.LogDate := Now;
-      fLogger.LogID := '0001';
-      fLogger.writeLog;
+      TSingleLogger.Logger.LogMessage := 'COULD NOT CONFIGURE ENVIORMENT';
+      TSingleLogger.Logger.LogDate := Now;
+      TSingleLogger.Logger.LogID := '0001';
+      TSingleLogger.Logger.writeLog;
     end;
 
 end.
