@@ -454,6 +454,7 @@ var
   date : String;
   hour : String;
   split : TStringList;
+  newDate : TDateTime;
 begin
   date := aDate.Substring(0, 10);
   hour := aDate.Substring(11, aDate.Length);
@@ -463,8 +464,9 @@ begin
   split.Delimiter := '-';
   split.DelimitedText := date;
 
-  Result := Concat(split.Strings[2],'/',split.Strings[1],'/',split.Strings[0],' ',
-  hour);
+  newDate := StrToDateTime(Concat(split.Strings[2],'/',split.Strings[1],'/',split.Strings[0],' ',
+  hour));
+  Result := FormatDateTime('dd/mm/yyyy hh:mm:ss', IncHour(newDate, -3));
 end;
 
 procedure TfrmMain.FormCreate(Sender: TObject);
