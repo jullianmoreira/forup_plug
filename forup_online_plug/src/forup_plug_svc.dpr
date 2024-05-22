@@ -51,10 +51,19 @@ begin
             Res.Send<TJSONObject>(collector.getCliente(Req.Params['id']));
           end
       );
+
+
       THorse.Post('updateJob',
         procedure(Req: THorseRequest; Res: THorseResponse)
+          var
+            objParam : TJSONValue;
           begin
 
+            objParam := Req.Body<TJSONValue>();
+            collector := TjobCollector.Create(adbPostgres);
+            collector.setClientConnection(objParam.GetValue<String>('cnpj'));
+
+            Res.Send<TJSONObject>(collector.updateJob(objParam.GetValue<String>('id')));
           end
       );
 

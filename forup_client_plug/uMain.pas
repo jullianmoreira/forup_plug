@@ -13,7 +13,9 @@ uses
   FireDAC.Phys, FireDAC.VCLUI.Wait, Data.DB, FireDAC.Comp.Client,
   FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteDef, FireDAC.Stan.ExprFuncs,
   FireDAC.Phys.SQLiteWrapper.Stat, Datasnap.DBClient, REST.Types, REST.Client,
-  Data.Bind.Components, Data.Bind.ObjectScope, System.DateUtils;
+  Data.Bind.Components, Data.Bind.ObjectScope, System.DateUtils,
+  FireDAC.Stan.Param, FireDAC.DatS, FireDAC.DApt.Intf, FireDAC.DApt,
+  FireDAC.Comp.DataSet;
 
 const
   FMT_LOGLINE = '%s -> %s -> %s';
@@ -96,6 +98,7 @@ type
     btReimprimir: TSpeedButton;
     Label9: TLabel;
     edtPediCodigo: TEdit;
+    localQry: TFDQuery;
     procedure popShowFormClick(Sender: TObject);
     procedure trayIconDblClick(Sender: TObject);
     procedure btCloseFormClick(Sender: TObject);
@@ -110,6 +113,7 @@ type
     { Private declarations }
     checkThread : TServiceChecker;
     thisFilial : TJSONObject;
+    EmprID, EmprCNPJ : String;
 
     function concatStr(aData : TArray<String>) : String;
     function coalesce(aData : TArray<String>) : String;
@@ -138,10 +142,15 @@ type
     { Public declarations }
     cfgFile : TIniFile;
 
+    function getHost : String;
+
     procedure LimparLog;
     procedure getJobs;
+    procedure updateJobStatus(id : String);
     procedure loadToCache(jobs : TJSONObject);
+    procedure saveOrderToCache(id : String; order, itens : String);
     procedure printOrder(order : TJSONObject);
+    procedure updateLastOne;
 
     function getCDSItens : TClientDataSet;
 
@@ -173,6 +182,45 @@ end;
 procedure TfrmMain.btMinimizeClick(Sender: TObject);
 begin
   HideMe;
+end;
+
+procedure TfrmMain.btReimprimirClick(Sender: TObject);
+var
+  order : TJSONObject;
+begin
+  try
+    btReimprimir.Enabled := false;
+    if edtPediCodigo.Text <> EmptyStr then
+      begin
+        DoingAction := true;
+        with localQry do
+          begin
+            Close;
+            Sql.Clear;
+            Sql.Add('SELECT * FROM orders WHERE order_id = '+edtPediCodigo.Text);
+            Open;
+            if not IsEmpty then
+              begin
+                order := TJSONObject.Create
+                  .AddPair(
+                      TJSONPair.Create('DtoVenda',
+                                       TJSONObject.ParseJSONValue(FieldByName('order_json').AsString)
+                      )
+                  )
+                  .AddPair(
+                      TJSONPair.Create('DtoVendaProduto',
+                                       TJSONArray(TJSONObject.ParseJSONValue(FieldByName('order_itens_json').AsString))
+                      )
+                  );
+
+                printOrder(order);
+              end;
+          end;
+        DoingAction := false;
+      end;
+  finally
+        btReimprimir.Enabled := true;
+  end;
 end;
 
 procedure TfrmMain.btUpdateConfigClick(Sender: TObject);
@@ -520,25 +568,61 @@ begin
   Result := FormatDateTime('dd/mm/yyyy hh:mm:ss',now);
 end;
 
-procedure TfrmMain.getJobs;
+function TfrmMain.getHost: String;
 begin
+  Result := cfgFile.ReadString(INI_SECTION_LOCAL_CONFIG, INI_OPTION_HOST, EmptyStr);
+end;
 
+procedure TfrmMain.getJobs;
+var
+  onlineJobs : TJSONObject;
+  jobsWaiting : TJSONArray;
+  job : TJSONValue;
+begin
+  LimparLog;
+  DoingAction := true;
+  onlineJobs := getJobsFromServer;
+  if onlineJobs.ToJSON <> '{}' then
+    begin
+      if onlineJobs.TryGetValue<TJSONArray>('jobs_waiting', jobsWaiting) then
+        begin
+          for job in jobsWaiting do
+            begin
+              updateJobStatus(job.GetValue<String>('id').ToLower.Replace('{',EmptyStr).Replace('}',EmptyStr));
+              loadToCache(TJSONObject(job));
+            end;
+        end;
+    end;
+  DoingAction := false;
 end;
 
 function TfrmMain.getJobsFromServer: TJSONObject;
+var
+  lastOne : String;
+  response : TStringStream;
 begin
+  lastOne := cfgFile.ReadString(INI_SECTION_LOCAL_CONFIG, INI_OPTION_CLIENT_LAST_PRINT, '-1');
 
+  apiClient.BaseURL := Concat(getHost, '/jobs/',
+    lastOne, '/', EmprID, '/',  EmprCNPJ);
+  apiRequest.Method := rmGET;
+  apiRequest.Execute;
+  response := TStringStream.Create('{}',TEncoding.UTF8);
+  if apiResponse.StatusCode = 200 then
+    begin
+      response.Free;
+      response := TStringStream.Create(apiResponse.Content, TEncoding.UTF8);
+    end;
+  Result := TJSONObject(TJSONObject.ParseJSONValue(response.DataString));
+  FreeAndNil(response);
 end;
 
 function TfrmMain.getURL_HeartBeat: String;
-var
-  host : String;
 begin
-  host := cfgFile.ReadString(INI_SECTION_LOCAL_CONFIG, INI_OPTION_HOST, EmptyStr);
   Result := EmptyStr;
-  if host <> EmptyStr then
+  if getHost <> EmptyStr then
     begin
-      Result := concat(host,'/heartBeat');
+      Result := concat(getHost,'/heartBeat');
     end;
 end;
 
@@ -550,7 +634,11 @@ end;
 procedure TfrmMain.LimparLog;
 begin
   if memLog.Lines.Count >= 200 then
-    memLog.Lines.Clear;
+    begin
+      memLog.Lines.SaveToFile(getAppPath+'bkp_log_'+
+      FormatDateTime('dd_mm_yyyy_hhmmss',now)+'.log');
+      memLog.Lines.Clear;
+    end;
 end;
 
 procedure TfrmMain.LoadPrinters;
@@ -570,8 +658,16 @@ var
   aFile, aDefault : String;
   aReport : TplugReport;
   I: Integer;
+  rel : TResourceStream;
 begin
   cbPrintModel.Clear;
+  if TDirectory.IsEmpty(getAppPath+REPORT_PATH) then
+    begin
+      rel := TResourceStream.Create(HInstance, 'REL80COL', RT_RCDATA);
+      rel.SaveToFile(getAppPath+REPORT_PATH+PathDelim+'rel_80col_default.fr3');
+      FreeAndNil(rel);
+    end;
+
   for aFile in TDirectory.GetFiles(getAppPath+REPORT_PATH) do
     begin
       aReport := TplugReport.Create(aFile);
@@ -591,7 +687,46 @@ begin
 end;
 
 procedure TfrmMain.loadToCache(jobs: TJSONObject);
+var
+  orders : TJSONArray;
+  order : TJSONValue;
+  job_data : TJSONObject;
+  strRead : TStringStream;
 begin
+  try
+    conLocal.StartTransaction;
+    with localQry do
+      begin
+        Close;
+        Sql.Clear;
+        Sql.Add('INSERT OR REPLACE INTO job_cache (job_id, job_data)');
+        Sql.Add('VALUES ('+QuotedStr(jobs.GetValue<String>('id'))+
+        ','+QuotedStr(jobs.GetValue<String>('job_data'))+');');
+        ExecSQL;
+      end;
+    conLocal.Commit;
+
+  strRead := TStringStream.Create(jobs.GetValue<String>('job_data'), TEncoding.UTF8);
+  orders := TJSONObject.ParseJSONValue(strRead.DataString).GetValue<TJSONArray>('orders');
+  for order in orders do
+    begin
+      printOrder(TJSONObject(order));
+    end;
+  updateLastOne;
+  except
+    on e : exception do
+      begin
+        memLog.Lines.Add(
+          Format(
+            FMT_LOGLINE,[
+              getFmtTime,
+              'Erro ao gravar o trabalho('+QuotedStr(jobs.GetValue<String>('id'))+') no cache',
+              e.Message
+            ]
+          )
+        );
+      end;
+  end;
 
 end;
 
@@ -648,6 +783,11 @@ begin
   if order <> nil then
     begin
       printStart := now;
+      if btReimprimir.Enabled then
+        saveOrderToCache(order.GetValue<String>('DtoVenda.Codigo.$numberLong'),
+          order.GetValue<TJSONObject>('DtoVenda').ToJSON,
+          order.GetValue<TJSONArray>('DtoVendaProduto').ToJSON);
+
       cdsItens := getCDSItens;
       for order_item in order.GetValue<TJSONArray>('DtoVendaProduto') do
         begin
@@ -720,8 +860,36 @@ begin
             'Tempo gasto: '+SecondsBetween(printStart, printFinish).ToString+' seg.'
           ]));
         end;
-
     end;
+end;
+
+procedure TfrmMain.saveOrderToCache(id, order, itens: String);
+begin
+  try
+    conLocal.StartTransaction;
+    with localQry do
+      begin
+        Close;
+        Sql.Clear;
+        Sql.Add('INSERT OR REPLACE INTO orders (order_id, order_json, order_itens_json)');
+        Sql.Add('VALUES ('+id+','+QuotedStr(order)+','+QuotedStr(itens)+')');
+        ExecSQL;
+      end;
+    conLocal.Commit;
+  except
+    on e : exception do
+      begin
+        memLog.Lines.Add(
+          Format(
+            FMT_LOGLINE,[
+              getFmtTime,
+              'Erro ao gravar a Venda ('+id+') no cache',
+              e.Message
+            ]
+          )
+        );
+      end;
+  end;
 end;
 
 procedure TfrmMain.serviceTimer(Sender: TObject);
@@ -734,7 +902,7 @@ begin
     begin
       if not DoingAction then
         begin
-
+          getJobs;
         end;
     end;
 end;
@@ -745,43 +913,50 @@ var
   jClients : TJSONArray;
   filial : TJSONValue;
   thisCNPJ : String;
+  fileFilial : TResourceStream;
 begin
-  if TFile.Exists(getAppPath+CLIENT_PATH+PathDelim+FILIAL_FILE) then
+  if not TFile.Exists(getAppPath+CLIENT_PATH+PathDelim+FILIAL_FILE) then
     begin
-      clients := TStringStream.Create('',TEncoding.UTF8);
-      clients.LoadFromFile(getAppPath+CLIENT_PATH+PathDelim+FILIAL_FILE);
-      jClients := TJSONObject.ParseJSONValue(clients.DataString).GetValue<TJSONArray>('filial');
-      thisCNPJ := cfgFile.ReadString(INI_SECTION_LOCAL_CONFIG, INI_OPTION_CLIENT_CNPJ, EmptyStr);
+      fileFilial := TResourceStream.Create(HInstance, 'JSONFILIAIS', RT_RCDATA);
+      fileFilial.SaveToFile(getAppPath+CLIENT_PATH+PathDelim+FILIAL_FILE);
+      FreeAndNil(fileFilial);
+    end;
 
-      for filial in jClients do
+  clients := TStringStream.Create('',TEncoding.UTF8);
+  clients.LoadFromFile(getAppPath+CLIENT_PATH+PathDelim+FILIAL_FILE);
+  jClients := TJSONObject.ParseJSONValue(clients.DataString).GetValue<TJSONArray>('filial');
+  thisCNPJ := cfgFile.ReadString(INI_SECTION_LOCAL_CONFIG, INI_OPTION_CLIENT_CNPJ, EmptyStr);
+
+  for filial in jClients do
+    begin
+      if filial.GetValue<String>('CNPJ').Equals(thisCNPJ) then
         begin
-          if filial.GetValue<String>('CNPJ').Equals(thisCNPJ) then
-            begin
-              thisFilial := TJSONObject(filial);
-              break;
-            end;
+          thisFilial := TJSONObject(filial);
+          EmprCNPJ := thisCNPJ;
+          break;
         end;
-      if thisFilial <> nil then
-        begin
-          cfgFile.WriteString(INI_SECTION_LOCAL_CONFIG, INI_OPTION_CLIENT_EMPR_ID, thisFilial.GetValue<String>('_id'));
-          memLog.Lines.Add(
-            Format(FMT_LOGLINE, [
-              getFmtTime,
-              'EMPRESA CARREGADA',
-              thisFilial.GetValue<String>('CNPJ')+' -> '+thisFilial.GetValue<String>('RazaoSocial')
-            ])
-          );
-        end
-      else
-        begin
-          memLog.Lines.Add(
-            Format(FMT_LOGLINE, [
-              getFmtTime,
-              'EMPRESA NÃO CARREGADA',
-              'CNPJ CONFIGURADO: '+thisCNPJ
-            ])
-          );
-        end;
+    end;
+  if thisFilial <> nil then
+    begin
+      cfgFile.WriteString(INI_SECTION_LOCAL_CONFIG, INI_OPTION_CLIENT_EMPR_ID, thisFilial.GetValue<String>('_id'));
+      EmprID := thisFilial.GetValue<String>('_id');
+      memLog.Lines.Add(
+        Format(FMT_LOGLINE, [
+          getFmtTime,
+          'EMPRESA CARREGADA',
+          thisFilial.GetValue<String>('CNPJ')+' -> '+thisFilial.GetValue<String>('RazaoSocial')
+        ])
+      );
+    end
+  else
+    begin
+      memLog.Lines.Add(
+        Format(FMT_LOGLINE, [
+          getFmtTime,
+          'EMPRESA NÃO CARREGADA',
+          'CNPJ CONFIGURADO: '+thisCNPJ
+        ])
+      );
     end;
 end;
 
@@ -803,40 +978,84 @@ begin
   Self.Show;
 end;
 
-procedure TfrmMain.btReimprimirClick(Sender: TObject);
-var
-  jobs_waiting, orders : TJSONArray;
-  job, order : TJSONValue;
-  job_data : TJSONObject;
-  strRead : TStringStream;
-begin
-  strRead := TStringStream.Create(EmptyStr, TEncoding.UTF8);
-  strRead.LoadFromFile(concat(getAppPath, PathDelim, CLIENT_PATH, PathDelim, 'jobservice.json'));
-
-  jobs_waiting := TJSONObject.ParseJSONValue(strRead.DataString).GetValue<TJSONArray>('jobs_waiting');
-  for job in jobs_waiting do
-    begin
-      //updateJOB
-      job_data := TJSONObject(TJSONObject.ParseJSONValue(job.GetValue<String>('job_data')));
-      orders := job_data.GetValue<TJSONArray>('orders');
-
-      for order in orders do
-        begin
-          printOrder(TJSONObject(order));
-        end;
-    end;
-
-end;
-
 procedure TfrmMain.switchLocalServiceClick(Sender: TObject);
 begin
   StopService := (switchLocalService.State = tssOff);
-
+  if not StopService then
+    DoingAction := false;
 end;
 
 procedure TfrmMain.trayIconDblClick(Sender: TObject);
 begin
   ShowMe;
+end;
+
+procedure TfrmMain.updateJobStatus(id: String);
+var
+  response, dtUpdte : TJSONValue;
+begin
+  apiClient.BaseURL := concat(getHost, '/updateJob');
+  apiRequest.Method := rmPOST;
+  apiRequest.Body.ClearBody;
+  apiRequest.Body.Add(
+    TJSONObject.Create.AddPair(
+      TJSONPair.Create('id',id)
+    ).AddPair('cnpj',EmprCNPJ)
+  );
+  apiRequest.Execute;
+  if apiResponse.StatusCode = 200 then
+    begin
+      if TJSONObject(TJSONObject.ParseJSONValue(apiResponse.Content)).
+        TryGetValue<TJSONValue>('error',response)  then
+        begin
+          memLog.Lines.Add(
+            Format(
+              FMT_LOGLINE, [
+                getFmtTime,
+                'Falha ao Processar o Trabalho: '+id,
+                response.GetValue<String>('exception_message')
+              ]
+            )
+          );
+        end
+      else
+        begin
+          TJSONObject(TJSONObject.ParseJSONValue(apiResponse.Content)).
+            TryGetValue<TJSONValue>('jobs_waiting',response);
+          if TJSONArray(response).Count > 0 then
+            begin
+              for dtUpdte in TJSONArray(response) do
+                begin
+                  memLog.Lines.Add(
+                    Format(
+                      FMT_LOGLINE, [
+                        getFmtTime,
+                        'Processando o Trabalho: '+id,
+                        dtUpdte.GetValue<String>('job_collected_at')
+                      ]
+                    )
+                  );
+                end;
+            end;
+        end;
+    end;
+
+end;
+
+procedure TfrmMain.updateLastOne;
+begin
+  with localQry do
+    begin
+      Close;
+      Sql.Clear;
+      Sql.Add('SELECT MAX(order_id) as LastOne FROM orders');
+      Open;
+      if not IsEmpty then
+        begin
+          cfgFile.WriteInteger(INI_SECTION_LOCAL_CONFIG, INI_OPTION_CLIENT_LAST_PRINT,
+          FieldByName('LastOne').AsInteger);
+        end;
+    end;
 end;
 
 { TplugReport }

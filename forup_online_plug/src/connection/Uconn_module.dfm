@@ -78,6 +78,11 @@ object conn_module: Tconn_module
   end
   object pgQryList: TFDQuery
     Connection = fup_postgre
+    FetchOptions.AssignedValues = [evMode, evAutoFetchAll]
+    FetchOptions.Mode = fmAll
+    ResourceOptions.AssignedValues = [rvParamCreate, rvParamExpand]
+    ResourceOptions.ParamCreate = False
+    ResourceOptions.ParamExpand = False
     Left = 64
     Top = 240
   end

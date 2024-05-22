@@ -186,7 +186,7 @@ begin
         begin
           Close;
           Sql.Clear;
-          Sql.Add('SELECT id, job_id, job_waiting_from, job_data, job_collected_at, job_status');
+          Sql.Add('SELECT id::character varying, job_id::character varying, job_waiting_from, job_data, job_collected_at, job_status');
           Sql.Add('FROM jobservice.jobs_waiting');
           Sql.Add('WHERE job_collected_at is null and job_status = ''W''');
           Open;
@@ -223,7 +223,7 @@ begin
       begin
         Close;
         Sql.Clear;
-        Sql.Add('SELECT id, job_id, job_waiting_from, job_data, job_collected_at, job_status');
+        Sql.Add('SELECT id::character varying, job_id::character varying, job_waiting_from, job_data, job_collected_at, job_status');
         Sql.Add('FROM jobservice.jobs_waiting');
         Sql.Add('WHERE job_collected_at is null and job_status = ''W''');
         Open;
@@ -329,9 +329,20 @@ begin
       begin
         Close;
         CommandText.Text := 'UPDATE jobservice.jobs_waiting'+
-          ' SET job_status=''P'', job_collected_at = now WHERE id='+QuotedStr(id)+';';
+          ' SET job_status=''P'', job_collected_at = now() WHERE jobservice.jobs_waiting.id='+QuotedStr(id)+';';
         Execute;
       end;
+
+    with conn_module.pgQryList do
+      begin
+        Close;
+        Sql.Clear;
+        Sql.Add('SELECT jobservice.jobs_waiting.job_collected_at from jobservice.jobs_waiting');
+        Sql.Add('WHERE jobservice.jobs_waiting.id = '+QuotedStr(id)+';');
+        Open;
+      end;
+
+    Result :=  THelper.Functions.dataset_to_json('jobs_waiting', conn_module.pgQryList);
   except
     on e : exception do
       begin

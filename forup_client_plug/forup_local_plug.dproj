@@ -4,7 +4,7 @@
         <ProjectVersion>19.5</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">Debug</Config>
+        <Config Condition="'$(Config)'==''">Release</Config>
         <Platform Condition="'$(Platform)'==''">Win64</Platform>
         <TargetedPlatforms>3</TargetedPlatforms>
         <AppType>Application</AppType>
@@ -58,7 +58,7 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
-        <DCC_DcuOutput>.\$(Platform)\$(Config)</DCC_DcuOutput>
+        <DCC_DcuOutput>.\$(Platform)\$(Config)\dcu</DCC_DcuOutput>
         <DCC_ExeOutput>.\$(Platform)\$(Config)</DCC_ExeOutput>
         <DCC_E>false</DCC_E>
         <DCC_N>false</DCC_N>
@@ -71,6 +71,8 @@
         <UWP_DelphiLogo150>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_150.png</UWP_DelphiLogo150>
         <SanitizedProjectName>forup_local_plug</SanitizedProjectName>
         <FeatureFilesAdded>SQLite</FeatureFilesAdded>
+        <VerInfo_Locale>1046</VerInfo_Locale>
+        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
         <DCC_UsePackage>vclwinx;DataSnapServer;ACBr_BPeDabpeESCPOS;ACBr_PAF;dacvcl280;ACBr_TCP;ACBr_ONE;ACBr_NF3e;ACBr_SPEDImportar;ACBr_OpenDelivery;fmx;emshosting;vclie;DbxCommonDriver;bindengine;IndyIPCommon;VCLRESTComponents;DBXMSSQLDriver;FireDACCommonODBC;emsclient;FireDACCommonDriver;ACBr_OpenSSL;appanalytics;IndyProtocols;vclx;ACBr_ADRCST;frxe28;IndyIPClient;dbxcds;vcledge;dac280;ACBr_MTER;bindcompvclwinx;ACBr_Convenio115;FmxTeeUI;ACBr_NFeDanfeFPDF;ACBr_MDFeDamdfeFR;frxFD28;ACBr_NFSeDanfseFR;unidac280;emsedge;bindcompfmx;DBXFirebirdDriver;ACBr_CTeDacteFR;inetdb;ACBr_NFCeECFVirtual;frxADO28;FireDACSqliteDriver;DbxClientDriver;FireDACASADriver;ACBr_LFD;Tee;soapmidas;ACBr_NF3eDANF3eESCPOS;vclactnband;TeeUI;ACBr_PagFor;fmxFireDAC;dbexpress;FireDACInfxDriver;ACBr_Reinf;DBXMySQLDriver;ACBr_NFSeXDanfseFPDF;VclSmp;inet;DataSnapCommon;unidacvcl280;dacfmx280;ACBr_Ponto;ACBr_BoletoFPDF;vcltouch;fmxase;frx28;DBXOdbcDriver;dbrtl;FireDACDBXDriver;FireDACOracleDriver;fmxdae;TeeDB;ACBr_NFSe;ACBre_Social;FireDACMSAccDriver;CustomIPTransport;FireDACMSSQLDriver;ACBr_NFSeX;DataSnapIndy10ServerTransport;ACBr_NFe;DataSnapConnectors;ACBr_ANe;vcldsnap;DBXInterBaseDriver;frxDB28;FireDACMongoDBDriver;IndySystem;ACBr_Diversos;ACBR_DeSTDA;ACBr_GNRE;ACBr_EDI;FireDACTDataDriver;ACBr_SAT;vcldb;ACBr_Integrador;ACBr_PIXCD;ACBr_CIOT;ACBr_TEFD;vclFireDAC;vquery280;ACBr_SPED;bindcomp;FireDACCommon;DataSnapServerMidas;FireDACODBCDriver;emsserverresource;unidacfmx280;ACBr_SEF2;IndyCore;RESTBackendComponents;ACBr_LCDPR;ACBr_CTe;ACBr_SATWS;ACBr_BoletoFR;bindcompdbx;frxHTML28;rtl;FireDACMySQLDriver;ACBr_NFeDanfeFR;FireDACADSDriver;ACBr_BPe;RESTComponents;ACBr_NFSeXDANFSeFR;DBXSqliteDriver;vcl;IndyIPServer;dsnapxml;dsnapcon;DataSnapClient;DataSnapProviderClient;adortl;ACBr_Sintegra;DBXSybaseASEDriver;ACBr_Serial;DBXDb2Driver;ACBr_Comum;frxcs28;ACBr_NFeDanfeESCPOS;ACBr_MDFe;vclimg;DataSnapFireDAC;emsclientfiredac;FireDACPgDriver;FireDAC;FireDACDSDriver;inetdbxpress;xmlrtl;tethering;ACBr_Boleto;ACBr_SATExtratoESCPOS;crcontrols280;ACBr_BlocoX;bindcompvcl;dsnap;ACBr_GTIN;CloudService;DBXSybaseASADriver;DBXOracleDriver;FireDACDb2Driver;DBXInformixDriver;ACBr_OFX;ACBr_SATECFVirtual;fmxobj;bindcompvclsmp;DataSnapNativeClient;FMXTee;ACBr_DebitoAutomatico;ACBr_PAFNFCe;ACBr_SATExtratoFR;ACBr_GNREGuiaFR;DatasnapConnectorsFreePascal;soaprtl;soapserver;FireDACIBDriver;$(DCC_UsePackage)</DCC_UsePackage>
@@ -153,6 +155,16 @@
             <ResourceType>RCDATA</ResourceType>
             <ResourceId>LOCAL_CACHE</ResourceId>
         </RcItem>
+        <RcItem Include="res\filial.json">
+            <ContainerId>ResourceItem</ContainerId>
+            <ResourceType>RCDATA</ResourceType>
+            <ResourceId>JSONFILIAIS</ResourceId>
+        </RcItem>
+        <RcItem Include="res\Recibo_80col_venda.fr3">
+            <ContainerId>ResourceItem</ContainerId>
+            <ResourceType>RCDATA</ResourceType>
+            <ResourceId>REL80COL</ResourceId>
+        </RcItem>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -174,18 +186,8 @@
                     <Source Name="MainSource">forup_local_plug.dpr</Source>
                 </Source>
                 <Excluded_Packages>
-                    <Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\22.0\Bpl\dclfrxDBX28.bpl">FastReport VCL DBX Components</Excluded_Packages>
-                    <Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\22.0\Bpl\dclfrxIntIO28.bpl">FastReport VCL Internet transports</Excluded_Packages>
-                    <Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\22.0\Bpl\dclfrxIntIOIndy28.bpl">FastReport VCL Internet transports</Excluded_Packages>
-                    <Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\22.0\Bpl\dclfrxPDF28.bpl">FastReport VCL PDF Component</Excluded_Packages>
-                    <Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\22.0\Bpl\dclfrxTee28.bpl">FastReport VCL Tee Components</Excluded_Packages>
-                    <Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\22.0\Bpl\dclfs28.bpl">FastScript 1.9 Components</Excluded_Packages>
-                    <Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\22.0\Bpl\dclfsADO28.bpl">FastScript 1.9 ADO Components</Excluded_Packages>
-                    <Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\22.0\Bpl\dclfsDB28.bpl">FastScript 1.9 DB Components</Excluded_Packages>
-                    <Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\22.0\Bpl\dclfsFD28.bpl">FastScript 1.9 FireDAC Components</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dcloffice2k280.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dclofficexp280.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
-                    <Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\22.0\Bpl\dclfsTee28.bpl">FastScript 1.9 Tee Components</Excluded_Packages>
                 </Excluded_Packages>
             </Delphi.Personality>
             <Deployment Version="4">
@@ -232,6 +234,54 @@
                 </DeployFile>
                 <DeployFile LocalName="$(BDS)\bin64\midas.dll" Configuration="Release" Class="File">
                     <Platform Name="Win64">
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_150.png" Configuration="Debug" Class="File">
+                    <Platform Name="Win32">
+                        <RemoteDir>Assest\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_150.png" Configuration="Debug" Class="File">
+                    <Platform Name="Win64">
+                        <RemoteDir>Assest\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_150.png" Configuration="Release" Class="File">
+                    <Platform Name="Win32">
+                        <RemoteDir>Assest\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_150.png" Configuration="Release" Class="File">
+                    <Platform Name="Win64">
+                        <RemoteDir>Assest\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_44.png" Configuration="Debug" Class="File">
+                    <Platform Name="Win32">
+                        <RemoteDir>Assest\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_44.png" Configuration="Debug" Class="File">
+                    <Platform Name="Win64">
+                        <RemoteDir>Assest\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_44.png" Configuration="Release" Class="File">
+                    <Platform Name="Win32">
+                        <RemoteDir>Assest\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_44.png" Configuration="Release" Class="File">
+                    <Platform Name="Win64">
+                        <RemoteDir>Assest\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
@@ -291,7 +341,33 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+                <DeployFile LocalName="$(Platform)\$(Configuration)\AppxManifest.xml" Configuration="Debug" Class="File">
+                    <Platform Name="Win32">
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="$(Platform)\$(Configuration)\AppxManifest.xml" Configuration="Debug" Class="File">
+                    <Platform Name="Win64">
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="$(Platform)\$(Configuration)\AppxManifest.xml" Configuration="Release" Class="File">
+                    <Platform Name="Win32">
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="$(Platform)\$(Configuration)\AppxManifest.xml" Configuration="Release" Class="File">
+                    <Platform Name="Win64">
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="Win32\Debug\forup_local_plug.exe" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win32">
+                        <RemoteName>forup_local_plug.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Win32\Release\forup_local_plug.exe" Configuration="Release" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>forup_local_plug.exe</RemoteName>
                         <Overwrite>true</Overwrite>
@@ -303,9 +379,15 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="Win64\Debug\forup_local_plug.rsm" Configuration="Debug" Class="DebugSymbols">
-                    <Platform Name="Win64">
-                        <RemoteName>forup_local_plug.rsm</RemoteName>
+                <DeployFile LocalName="res\Recibo_80col_venda.fr3" Configuration="Release" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="res\filial.json" Configuration="Release" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
@@ -315,8 +397,20 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+                <DeployFile LocalName="res\icons\icons8-esfera-verde-25.png" Configuration="Release" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="res\icons\icons8-esfera-vermelha-25.png" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="res\icons\icons8-esfera-vermelha-25.png" Configuration="Release" Class="ProjectFile">
+                    <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
@@ -337,6 +431,12 @@
                 </DeployFile>
                 <DeployFile LocalName="res\localCache" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="res\localCache" Configuration="Release" Class="ProjectFile">
+                    <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
