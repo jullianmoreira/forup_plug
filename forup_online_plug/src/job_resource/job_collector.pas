@@ -119,7 +119,7 @@ begin
             Close;
             Sql.Clear;
             Sql.Add('{"find":"DtoVenda", "filter":{"Codigo":{$gt:'+Self.LastPrinted+'}, '+
-              '"Impresso": false, "OrigemVenda":{$in:["PDV Mobi","PDV","Venda Direta"]}, "EmpresaId":"'+Self.EnterpriseID+'"}}');
+              '"Impresso": false, "OrigemVenda":{$in:["PDV Mobi","PDV","Venda Direta","Pedido Faturado"]}, "EmpresaId":"'+Self.EnterpriseID+'"}}');
             Open;
 
             DtoVenda := TJSONArray.Create;
@@ -346,8 +346,8 @@ begin
               begin
                 Close;
                 Sql.Clear;
-                Sql.Add('SELECT cc.*,');
-                Sql.Add('(select jc.id');
+                Sql.Add('SELECT cc.id::character varying as _id, cc.*,');
+                Sql.Add('(select jc.id::character varying');
                 Sql.Add(' from jobservice.job_config jc');
                 Sql.Add(' where jc.client_id = cc.id');
                 Sql.Add(' and jc.job_info ->> ''job_name'' in (''Imprimir Venda MOB'')');
@@ -360,7 +360,7 @@ begin
                   begin
                     jsonStream := TStringStream.Create(FieldByName('connection_info').AsString, TEncoding.UTF8);
                     ClientMongoConnection := TJSONObject.ParseJSONValue(jsonStream.DataString);
-                    pgClientID := FieldByName('id').AsString;
+                    pgClientID := FieldByName('_id').AsString;
                     pgJobID := FieldByName('jobID').AsString;
                   end;
               end;

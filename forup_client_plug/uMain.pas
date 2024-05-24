@@ -913,7 +913,10 @@ begin
           orderID := concat(order.GetValue<String>('DtoVenda._id.$oid').ToLower,
            ' (',order.GetValue<String>('DtoVenda.Codigo.$numberLong'),') ');
           Variables['ORDER_ID'] := QuotedStr(order.GetValue<String>('DtoVenda.Codigo.$numberLong'));
-          Variables['ORDER_PAYMENT'] := getOrderPayment(order.GetValue<TJSONArray>('DtoVenda.PagamentosVenda'));
+          if order.GetValue<TJSONValue>('DtoVenda.PagamentosVenda') is TJSONNull then
+            Variables['ORDER_PAYMENT'] := QuotedStr('Forma de Pgto não informada')
+          else
+            Variables['ORDER_PAYMENT'] := getOrderPayment(order.GetValue<TJSONArray>('DtoVenda.PagamentosVenda'));
 
           //Chamar o Cliente aqui
           cliente := getClientData(order.GetValue<String>('DtoVenda.ClienteId'),

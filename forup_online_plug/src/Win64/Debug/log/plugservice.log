@@ -1,1 +1,2 @@
 2024-05-22 -> 009 [COULD NOT LOAD JOBS] ({"exception_message":"Could not convert variant of type (Null) into type (OleStr)"})
+2024-05-24 -> 004 [COULD NOT GET JOBS FOR PRINTING] ({"exception_message":"[FireDAC][Phys][PG][libpq] ERROR: invalid input syntax for type uuid: \"\""})

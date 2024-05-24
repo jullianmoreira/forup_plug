@@ -76,7 +76,7 @@ begin
         end;
 
       strMessage := Format(LOG_LINE,[
-        FormatDateTime('yyyy-mm-dd', Self.FLogDate),
+        FormatDateTime('yyyy-mm-dd hh:mm:ss', Self.FLogDate),
         IfThen(Self.FLogID.IsEmpty, '0000', Self.FLogID),
         Self.FLogMessage,
         Ifthen(Self.FLogAdditionaInfo <> nil, Self.FLogAdditionaInfo.ToJSON, '{}')
