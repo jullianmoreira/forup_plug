@@ -52,6 +52,17 @@ begin
           end
       );
 
+      THorse.Get('order/:cod/:cnpj/:idcli',
+        procedure(Req: THorseRequest; Res: THorseResponse)
+          begin
+            collector := TjobCollector.Create(adbPostgres, '', Req.Params['idcli']);
+            collector.setClientConnection(Req.Params['cnpj']);
+
+            Res.Send<TJSONObject>(collector.getOrderData(Req.Params['cod']));
+          end
+      );
+
+
 
       THorse.Post('updateJob',
         procedure(Req: THorseRequest; Res: THorseResponse)

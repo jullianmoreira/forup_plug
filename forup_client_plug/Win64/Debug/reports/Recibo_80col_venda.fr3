@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
-<TfrxReport Version="2022.1.3" DotMatrixReport="False" IniFile="\Software\Fast Reports" PreviewOptions.Buttons="167935" PreviewOptions.Zoom="1" PrintOptions.Printer="Default" PrintOptions.PrintOnSheet="0" ReportOptions.CreateDate="45427,9297193519" ReportOptions.Description.Text="" ReportOptions.LastChange="45432,9631249653" ScriptLanguage="PascalScript" ScriptText.Text="&#13;&#10;begin&#13;&#10;&#13;&#10;end.">
+<TfrxReport Version="2022.1.3" DotMatrixReport="False" IniFile="\Software\Fast Reports" PreviewOptions.Buttons="167935" PreviewOptions.Zoom="1" PrintOptions.Printer="Default" PrintOptions.PrintOnSheet="0" ReportOptions.CreateDate="45427,9297193519" ReportOptions.Description.Text="" ReportOptions.LastChange="45435,8975343982" ScriptLanguage="PascalScript" ScriptText.Text="&#13;&#10;begin&#13;&#10;&#13;&#10;end.">
   <Datasets>
     <item DataSet="repData" DataSetName="ReportData"/>
   </Datasets>
@@ -19,6 +19,7 @@
     <item Name="ORDER_VLRTOTAL"/>
     <item Name="ORDER_SHIPTOTAL"/>
     <item Name="ORDER_DESCTOTAL"/>
+    <item Name="ORDER_PAYMENT"/>
   </Variables>
   <TfrxDataPage Name="Data" HGuides.Text="" VGuides.Text="" Height="1000" Left="0" Top="0" Width="1000"/>
   <TfrxReportPage Name="Page1" HGuides.Text="" VGuides.Text="" PaperWidth="80" PaperHeight="297" PaperSize="256" LeftMargin="1" RightMargin="1" TopMargin="5" BottomMargin="5" ColumnWidth="0" ColumnPositions.Text="" Frame.Typ="0" MirrorMode="0">
@@ -54,16 +55,20 @@
       <TfrxMemoView Name="Memo10" AllowVectorExport="True" Left="211,65368" Top="15" Width="52,91342" Height="15,11812" Font.Charset="1" Font.Color="0" Font.Height="-9" Font.Name="Calibri" Font.Style="0" Frame.Typ="15" Frame.Width="0,5" HAlign="haCenter" ParentFont="False" VAlign="vaCenter" Text="VR. TOTAL"/>
       <TfrxMemoView Name="Memo6" AllowVectorExport="True" Left="0" Top="0" Width="264,5671" Height="15,11812" Font.Charset="1" Font.Color="0" Font.Height="-11" Font.Name="Calibri" Font.Style="0" Frame.Typ="15" Frame.Width="0,5" HAlign="haCenter" ParentFont="False" VAlign="vaCenter" Text="PRODUTOS"/>
     </TfrxColumnHeader>
-    <TfrxReportSummary Name="RptSummary" FillType="ftBrush" FillGap.Top="0" FillGap.Left="0" FillGap.Bottom="0" FillGap.Right="0" Frame.Typ="0" Height="71,81107" Left="0" Top="445,98454" Width="294,80334">
+    <TfrxReportSummary Name="RptSummary" FillType="ftBrush" FillGap.Top="0" FillGap.Left="0" FillGap.Bottom="0" FillGap.Right="0" Frame.Typ="0" Height="60,47248" Left="0" Top="445,98454" Width="294,80334" Child="Child1" Stretched="True">
       <TfrxMemoView Name="Memo15" AllowVectorExport="True" Left="190,75603" Top="0" Width="71,81107" Height="15,11812" DisplayFormat.FormatStr="%2.2n" DisplayFormat.Kind="fkNumeric" Font.Charset="1" Font.Color="0" Font.Height="-9" Font.Name="Calibri" Font.Style="0" Frame.Typ="0" Frame.Width="0,5" HAlign="haRight" ParentFont="False" VAlign="vaCenter" Text="[ORDER_VLRTOTAL]"/>
       <TfrxMemoView Name="Memo16" AllowVectorExport="True" Left="0" Top="0" Width="26,45671" Height="15,11812" Font.Charset="1" Font.Color="0" Font.Height="-8" Font.Name="Arial" Font.Style="0" Frame.Typ="0" Frame.Width="0,5" ParentFont="False" VAlign="vaCenter" Text="Frete:"/>
       <TfrxMemoView Name="Memo17" AllowVectorExport="True" Left="26,45671" Top="0" Width="41,57483" Height="15,11812" DisplayFormat.FormatStr="%2.2n" DisplayFormat.Kind="fkNumeric" Font.Charset="1" Font.Color="0" Font.Height="-9" Font.Name="Calibri" Font.Style="0" Frame.Typ="0" Frame.Width="0,5" HAlign="haRight" ParentFont="False" VAlign="vaCenter" Text="[ORDER_SHIPTOTAL]"/>
       <TfrxMemoView Name="Memo18" AllowVectorExport="True" Left="71,81107" Top="0" Width="30,23624" Height="15,11812" Font.Charset="1" Font.Color="0" Font.Height="-8" Font.Name="Arial" Font.Style="0" Frame.Typ="0" Frame.Width="0,5" ParentFont="False" VAlign="vaCenter" Text="Desc.:"/>
       <TfrxMemoView Name="Memo19" AllowVectorExport="True" Left="102,04731" Top="0" Width="52,91342" Height="15,11812" DisplayFormat.FormatStr="%2.2n" DisplayFormat.Kind="fkNumeric" Font.Charset="1" Font.Color="0" Font.Height="-9" Font.Name="Calibri" Font.Style="0" Frame.Typ="0" Frame.Width="0,5" HAlign="haRight" ParentFont="False" VAlign="vaCenter" Text="[ORDER_DESCTOTAL]"/>
-      <TfrxMemoView Name="Memo20" AllowVectorExport="True" Left="0" Top="24,67718" Width="264,5671" Height="15,11812" Font.Charset="1" Font.Color="0" Font.Height="-12" Font.Name="Calibri" Font.Style="0" Frame.Typ="0" HAlign="haCenter" ParentFont="False" Text="** SEM VALOR FISCAL **"/>
-      <TfrxLineView Name="Line2" AllowVectorExport="True" Left="0" Top="22,67718" Width="268,346456692913" Height="0" Color="0" Frame.Typ="4" Frame.Width="1,5"/>
       <TfrxMemoView Name="Memo21" AllowVectorExport="True" Left="163,96073" Top="0" Width="26,45671" Height="15,11812" Font.Charset="1" Font.Color="0" Font.Height="-8" Font.Name="Arial" Font.Style="0" Frame.Typ="0" Frame.Width="0,5" ParentFont="False" VAlign="vaCenter" Text="Total:"/>
-      <TfrxMemoView Name="Memo22" AllowVectorExport="True" Left="0" Top="39,7953" Width="264,5671" Height="26,45671" Font.Charset="1" Font.Color="0" Font.Height="-11" Font.Name="Calibri" Font.Style="0" Frame.Typ="0" HAlign="haCenter" ParentFont="False" Text="Trocas serão aceitas apenas dentro do prazo de 7 dias e apenas em peças de mesma coleção."/>
+      <TfrxMemoView Name="Memo33" AllowVectorExport="True" Left="0" Top="18,89765" Width="264,5671" Height="18,89765" Font.Charset="1" Font.Color="0" Font.Height="-11" Font.Name="Arial" Font.Style="0" Frame.Typ="15" HAlign="haCenter" ParentFont="False" Text="Forma de Pagamento"/>
+      <TfrxMemoView Name="Memo34" AllowVectorExport="True" Left="0" Top="37,7953" Width="264,5671" Height="18,89765" StretchMode="smMaxHeight" Font.Charset="1" Font.Color="0" Font.Height="-11" Font.Name="Arial" Font.Style="0" Frame.Typ="15" HAlign="haCenter" ParentFont="False" Text="[ORDER_PAYMENT]"/>
     </TfrxReportSummary>
+    <TfrxChild Name="Child1" FillType="ftBrush" FillGap.Top="0" FillGap.Left="0" FillGap.Bottom="0" FillGap.Right="0" Frame.Typ="0" Height="52,91342" Left="0" Top="529,1342" Width="294,80334" ToNRows="0" ToNRowsMode="rmCount">
+      <TfrxLineView Name="Line2" AllowVectorExport="True" Left="0" Top="2" Width="268,34645669" Height="0" Color="0" Frame.Typ="4" Frame.Width="1,5"/>
+      <TfrxMemoView Name="Memo20" AllowVectorExport="True" Left="0" Top="4,55906" Width="264,5671" Height="15,11812" Font.Charset="1" Font.Color="0" Font.Height="-12" Font.Name="Calibri" Font.Style="0" Frame.Typ="0" HAlign="haCenter" ParentFont="False" Text="** SEM VALOR FISCAL **"/>
+      <TfrxMemoView Name="Memo22" AllowVectorExport="True" Left="0" Top="19,67718" Width="264,5671" Height="26,45671" Font.Charset="1" Font.Color="0" Font.Height="-11" Font.Name="Calibri" Font.Style="0" Frame.Typ="0" HAlign="haCenter" ParentFont="False" Text="Trocas serão aceitas apenas dentro do prazo de 7 dias e apenas em peças de mesma coleção."/>
+    </TfrxChild>
   </TfrxReportPage>
 </TfrxReport>

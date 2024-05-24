@@ -25,6 +25,8 @@ type
       function getJobs : TJSONObject;
       function getCliente(id : String) : TJSONObject;
       function updateJob(id : String) : TJSONObject;
+
+      function getOrderData(cod : String) : TJSONObject;
   end;
 
 implementation
@@ -117,7 +119,7 @@ begin
             Close;
             Sql.Clear;
             Sql.Add('{"find":"DtoVenda", "filter":{"Codigo":{$gt:'+Self.LastPrinted+'}, '+
-              '"Impresso": false, "OrigemVenda": "PDV", "EmpresaId":"'+Self.EnterpriseID+'"}}');
+              '"Impresso": false, "OrigemVenda":{$in:["PDV Mobi","PDV","Venda Direta"]}, "EmpresaId":"'+Self.EnterpriseID+'"}}');
             Open;
 
             DtoVenda := TJSONArray.Create;
@@ -242,6 +244,92 @@ begin
         Result := TJSONObject.Create(TJSONPair.Create('error',TSingleLogger.Logger.LogAdditionaInfo));
       end;
   end;
+end;
+
+function TjobCollector.getOrderData(cod: String): TJSONObject;
+var
+  mDoc : TMongoDocument;
+  jobData : TJSONObject;
+
+  DtoVenda : TJSONArray;
+  DtoVendaProduto : TJSONArray;
+  iVenda: Integer;
+begin
+  try
+    conn_module.ConnectMongo(Self.ClientMongoConnection);
+    jobData := TJSONObject.Create(TJSONPair.Create('orders',TJSONValue(TJSONArray.Create)));
+
+    if conn_module.MongoDBConnected then
+      begin
+        with conn_module.mongoQryList do
+          begin
+            Close;
+            Sql.Clear;
+            Sql.Add('{"find":"DtoVenda", "filter":{"Codigo":' + cod +
+              ', "EmpresaId":"'+Self.EnterpriseID+'"}}');
+            Open;
+
+            DtoVenda := TJSONArray.Create;
+            if not IsEmpty then
+              begin
+                First;
+                while not Eof do
+                  begin
+                    mDoc := TMongoDocument(GetObject('DtoVenda'));
+                    updateDtoVenda(mDoc.FieldByName['_id'].GetData.AsString.ToLower);
+                    DtoVenda.AddElement(TJSONObject.ParseJSONValue(mDoc.Text));
+                    Next;
+                  end;
+              end;
+
+            if DtoVenda.Count > 0 then
+              begin
+                DtoVendaProduto := TJSONArray.Create;
+                for iVenda := 0 to DtoVenda.Count-1 do
+                  begin
+                    Close;
+                    Sql.Clear;
+                    Sql.Add('{"find":"DtoVendaProduto", "filter":{"VendaID":"'+
+                      DtoVenda.Items[iVenda].GetValue<String>('_id.$oid').ToLower
+                    +'"}}');
+                    Open;
+
+                    if not IsEmpty then
+                      begin
+                        First;
+                        while not Eof do
+                          begin
+                            mDoc := TMongoDocument(GetObject('DtoVendaProduto'));
+                            DtoVendaProduto.AddElement(TJSONObject.ParseJSONValue(mDoc.Text));
+                            Next;
+                          end;
+                      end;
+
+                    jobData.GetValue<TJSONArray>('orders').AddElement(
+                      TJSONObject.ParseJSONValue('{"DtoVenda":'+TJSONValue(DtoVenda.Items[iVenda]).ToJSON+','+
+                        '"DtoVendaProduto":'+TJSONValue(DtoVendaProduto).ToJSON+'}')
+                    );
+                  end;
+              end;
+          end;
+      end;
+
+      Result := jobData;
+  except
+    on e : exception do
+      begin
+        Result := TJSONObject(TJSONObject.ParseJSONValue('{"orders":[]}'));
+
+        TSingleLogger.Logger.LogMessage := 'COULD NOT GET ORDER';
+        TSingleLogger.Logger.LogDate := now;
+        TSingleLogger.Logger.LogID := '013';
+        TSingleLogger.Logger.LogAdditionaInfo := TJSONObject.ParseJSONValue('{"exception_message":"'+
+        THelper.Functions.prepare_string_json(e.Message)+'"}');
+        TSingleLogger.Logger.writeLog;
+      end;
+  end;
+
+
 end;
 
 procedure TjobCollector.setClientConnection(aClient: String);

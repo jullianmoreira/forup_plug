@@ -935,7 +935,7 @@ object frmMain: TfrmMain
         OnClick = btUpdateConfigClick
       end
       object btReimprimir: TSpeedButton
-        Left = 564
+        Left = 558
         Top = 92
         Width = 35
         Height = 35
@@ -1065,10 +1065,10 @@ object frmMain: TfrmMain
         OnClick = btReimprimirClick
       end
       object Label9: TLabel
-        Left = 543
-        Top = 24
-        Width = 77
-        Height = 33
+        Left = 519
+        Top = 13
+        Width = 109
+        Height = 17
         Alignment = taCenter
         AutoSize = False
         Caption = 'Reimprimir Pedido'
@@ -1111,12 +1111,26 @@ object frmMain: TfrmMain
         OnClick = switchLocalServiceClick
       end
       object edtPediCodigo: TEdit
-        Left = 543
+        Left = 519
         Top = 63
-        Width = 77
+        Width = 109
         Height = 23
+        Alignment = taRightJustify
         NumbersOnly = True
         TabOrder = 4
+      end
+      object cbPrintTime: TComboBox
+        Left = 519
+        Top = 34
+        Width = 109
+        Height = 23
+        Style = csDropDownList
+        ItemIndex = 0
+        TabOrder = 5
+        Text = 'Atualizado'
+        Items.Strings = (
+          'Atualizado'
+          'Armazenado')
       end
     end
     object GroupBox2: TGroupBox
@@ -1311,7 +1325,7 @@ object frmMain: TfrmMain
     PrintOptions.Printer = 'Default'
     PrintOptions.PrintOnSheet = 0
     ReportOptions.CreateDate = 45427.929719351900000000
-    ReportOptions.LastChange = 45432.963124965280000000
+    ReportOptions.LastChange = 45435.946670625000000000
     ScriptLanguage = 'PascalScript'
     ScriptText.Strings = (
       ''
@@ -1385,6 +1399,10 @@ object frmMain: TfrmMain
       item
         Name = 'ORDER_DESCTOTAL'
         Value = Null
+      end
+      item
+        Name = 'ORDER_PAYMENT'
+        Value = ''
       end>
     Style = <>
     object Data: TfrxDataPage
@@ -11296,9 +11314,11 @@ object frmMain: TfrmMain
         FillGap.Bottom = 0
         FillGap.Right = 0
         Frame.Typ = []
-        Height = 71.811070000000000000
+        Height = 60.472480000000000000
         Top = 445.984540000000000000
         Width = 294.803340000000000000
+        Child = reports.Child1
+        Stretched = True
         object Memo15: TfrxMemoView
           AllowVectorExport = True
           Left = 190.756030000000000000
@@ -11392,30 +11412,6 @@ object frmMain: TfrmMain
           ParentFont = False
           VAlign = vaCenter
         end
-        object Memo20: TfrxMemoView
-          AllowVectorExport = True
-          Top = 24.677180000000000000
-          Width = 264.567100000000000000
-          Height = 15.118120000000000000
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clBlack
-          Font.Height = -12
-          Font.Name = 'Calibri'
-          Font.Style = []
-          Frame.Typ = []
-          HAlign = haCenter
-          Memo.UTF8W = (
-            '** SEM VALOR FISCAL **')
-          ParentFont = False
-        end
-        object Line2: TfrxLineView
-          AllowVectorExport = True
-          Top = 22.677180000000000000
-          Width = 268.346456692913400000
-          Color = clBlack
-          Frame.Typ = [ftTop]
-          Frame.Width = 1.500000000000000000
-        end
         object Memo21: TfrxMemoView
           AllowVectorExport = True
           Left = 163.960730000000000000
@@ -11433,9 +11429,79 @@ object frmMain: TfrmMain
           ParentFont = False
           VAlign = vaCenter
         end
+        object Memo33: TfrxMemoView
+          AllowVectorExport = True
+          Top = 18.897650000000000000
+          Width = 264.567100000000000000
+          Height = 18.897650000000000000
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = []
+          Frame.Typ = [ftLeft, ftRight, ftTop, ftBottom]
+          HAlign = haCenter
+          Memo.UTF8W = (
+            'Forma de Pagamento')
+          ParentFont = False
+        end
+        object Memo34: TfrxMemoView
+          AllowVectorExport = True
+          Top = 37.795300000000000000
+          Width = 264.567100000000000000
+          Height = 18.897650000000000000
+          StretchMode = smMaxHeight
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = []
+          Frame.Typ = [ftLeft, ftRight, ftTop, ftBottom]
+          HAlign = haCenter
+          Memo.UTF8W = (
+            '[ORDER_PAYMENT]')
+          ParentFont = False
+        end
+      end
+      object Child1: TfrxChild
+        FillType = ftBrush
+        FillGap.Top = 0
+        FillGap.Left = 0
+        FillGap.Bottom = 0
+        FillGap.Right = 0
+        Frame.Typ = []
+        Height = 52.913420000000000000
+        Top = 529.134200000000000000
+        Width = 294.803340000000000000
+        ToNRows = 0
+        ToNRowsMode = rmCount
+        object Line2: TfrxLineView
+          AllowVectorExport = True
+          Top = 2.000000000000000000
+          Width = 268.346456690000000000
+          Color = clBlack
+          Frame.Typ = [ftTop]
+          Frame.Width = 1.500000000000000000
+        end
+        object Memo20: TfrxMemoView
+          AllowVectorExport = True
+          Top = 4.559060000000000000
+          Width = 264.567100000000000000
+          Height = 15.118120000000000000
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -12
+          Font.Name = 'Calibri'
+          Font.Style = []
+          Frame.Typ = []
+          HAlign = haCenter
+          Memo.UTF8W = (
+            '** SEM VALOR FISCAL **')
+          ParentFont = False
+        end
         object Memo22: TfrxMemoView
           AllowVectorExport = True
-          Top = 39.795300000000000000
+          Top = 19.677180000000000000
           Width = 264.567100000000000000
           Height = 26.456710000000000000
           Font.Charset = DEFAULT_CHARSET

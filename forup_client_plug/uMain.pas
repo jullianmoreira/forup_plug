@@ -15,7 +15,7 @@ uses
   FireDAC.Phys.SQLiteWrapper.Stat, Datasnap.DBClient, REST.Types, REST.Client,
   Data.Bind.Components, Data.Bind.ObjectScope, System.DateUtils,
   FireDAC.Stan.Param, FireDAC.DatS, FireDAC.DApt.Intf, FireDAC.DApt,
-  FireDAC.Comp.DataSet;
+  FireDAC.Comp.DataSet, System.Generics.Collections;
 
 const
   FMT_LOGLINE = '%s -> %s -> %s';
@@ -99,6 +99,7 @@ type
     Label9: TLabel;
     edtPediCodigo: TEdit;
     localQry: TFDQuery;
+    cbPrintTime: TComboBox;
     procedure popShowFormClick(Sender: TObject);
     procedure trayIconDblClick(Sender: TObject);
     procedure btCloseFormClick(Sender: TObject);
@@ -117,7 +118,7 @@ type
 
     function concatStr(aData : TArray<String>) : String;
     function coalesce(aData : TArray<String>) : String;
-    function fmtJsonDate(aDate : String) : String;
+    function fmtJsonDate(aDate : String; withHour : Boolean = true) : String;
 
     function getFmtTime : String;
     function getURL_HeartBeat : String;
@@ -138,6 +139,7 @@ type
 
     function getClientData(id, cnpj : String) : TJSONObject;
     function getJobsFromServer : TJSONObject;
+    function getOrderFromServer(cod : String) : TJSONObject;
   public
     { Public declarations }
     cfgFile : TIniFile;
@@ -150,6 +152,8 @@ type
     procedure loadToCache(jobs : TJSONObject);
     procedure saveOrderToCache(id : String; order, itens : String);
     procedure printOrder(order : TJSONObject);
+
+    function getOrderPayment(payments : TJSONArray) : String;
     procedure updateLastOne;
 
     function getCDSItens : TClientDataSet;
@@ -193,29 +197,53 @@ begin
     if edtPediCodigo.Text <> EmptyStr then
       begin
         DoingAction := true;
-        with localQry do
-          begin
-            Close;
-            Sql.Clear;
-            Sql.Add('SELECT * FROM orders WHERE order_id = '+edtPediCodigo.Text);
-            Open;
-            if not IsEmpty then
-              begin
-                order := TJSONObject.Create
-                  .AddPair(
-                      TJSONPair.Create('DtoVenda',
-                                       TJSONObject.ParseJSONValue(FieldByName('order_json').AsString)
-                      )
-                  )
-                  .AddPair(
-                      TJSONPair.Create('DtoVendaProduto',
-                                       TJSONArray(TJSONObject.ParseJSONValue(FieldByName('order_itens_json').AsString))
-                      )
-                  );
+        case cbPrintTime.ItemIndex of
+          0 : begin
+              order := getOrderFromServer(edtPediCodigo.Text);
 
-                printOrder(order);
-              end;
+              if order.GetValue<TJSONArray>('orders').Count > 0 then
+                begin
+                  printOrder(TJSONObject(order.GetValue<TJSONArray>('orders').Items[0]));
+                end
+              else
+                begin
+                  memLog.Lines.Add(
+                    Format(
+                      FMT_LOGLINE,
+                      [getFmtTime,
+                      'VENDA NÃO LOCALIZADA',
+                      'VENDA: "'+edtPediCodigo.Text+'"'
+                      ]
+                    )
+                  )
+                end;
           end;
+          1 : begin
+              with localQry do
+                begin
+                  Close;
+                  Sql.Clear;
+                  Sql.Add('SELECT * FROM orders WHERE order_id = '+edtPediCodigo.Text);
+                  Open;
+                  if not IsEmpty then
+                    begin
+                      order := TJSONObject.Create
+                        .AddPair(
+                            TJSONPair.Create('DtoVenda',
+                                             TJSONObject.ParseJSONValue(FieldByName('order_json').AsString)
+                            )
+                        )
+                        .AddPair(
+                            TJSONPair.Create('DtoVendaProduto',
+                                             TJSONArray(TJSONObject.ParseJSONValue(FieldByName('order_itens_json').AsString))
+                            )
+                        );
+
+                      printOrder(order);
+                    end;
+                end;
+          end;
+        end;
         DoingAction := false;
       end;
   finally
@@ -254,6 +282,7 @@ end;
 procedure TfrmMain.CheckEnviorment;
 var
   timerVal : Integer;
+  midas : TResourceStream;
 begin
   cfgFile := getCFGFile;
 
@@ -262,6 +291,14 @@ begin
   if not TDirectory.Exists(getAppPath+REPORT_PATH) then
     TDirectory.CreateDirectory(getAppPath+REPORT_PATH);
 
+  {$IFDEF WIN32}
+    midas := TResourceStream.Create(HInstance, 'MIDAS32', RT_RCDATA);
+  {$ELSE}
+    midas := TResourceStream.Create(HInstance, 'MIDAS64', RT_RCDATA);
+  {$ENDIF}
+
+  if not TFile.Exists(getAppPath+'midas.dll') then
+    midas.SaveToFile(getAppPath+'midas.dll');
 
   LoadPrinters;
   LoadReports;
@@ -299,7 +336,6 @@ var
   hConnect: Pointer;
   dwAccessType: DWORD;
   dwFlags: DWORD;
-  lpszUserAgent: LPCTSTR;
   URL : String;
 begin
   OnlineServiceActive := false;
@@ -323,7 +359,6 @@ begin
         begin
           // Abre uma conexão com o URL especificado
           dwFlags := 0;
-          lpszUserAgent := nil;
           hConnect := InternetOpenUrl(hInternet, PChar(URL), nil, 0, dwFlags, 0);
           if hConnect <> nil then
           begin
@@ -441,15 +476,14 @@ end;
 
 function TfrmMain.concatStr(aData: TArray<String>): String;
 var
-  i, icount : Integer;
+  i : Integer;
 begin
-  icount := Length(aData);
   Result := EmptyStr;
   for i := Low(aData) to High(aData) do
     Result := Result + aData[i];
 end;
 
-function TfrmMain.fmtJsonDate(aDate: String): String;
+function TfrmMain.fmtJsonDate(aDate : String; withHour : Boolean = true) : String;
 var
   date : String;
   hour : String;
@@ -465,8 +499,11 @@ begin
   split.DelimitedText := date;
 
   newDate := StrToDateTime(Concat(split.Strings[2],'/',split.Strings[1],'/',split.Strings[0],' ',
-  hour));
-  Result := FormatDateTime('dd/mm/yyyy hh:mm:ss', IncHour(newDate, -3));
+    hour));
+  if withHour then
+    Result := FormatDateTime('dd/mm/yyyy hh:mm:ss', IncHour(newDate, -3))
+  else
+    Result := FormatDateTime('dd/mm/yyyy', IncHour(newDate, -3));
 end;
 
 procedure TfrmMain.FormCreate(Sender: TObject);
@@ -619,6 +656,62 @@ begin
   FreeAndNil(response);
 end;
 
+function TfrmMain.getOrderFromServer(cod: String): TJSONObject;
+var
+  response : TStringStream;
+begin
+  apiClient.BaseURL := Concat(getHost, '/order/',
+    cod, '/', EmprCNPJ, '/', EmprID );
+  apiRequest.Method := rmGET;
+  apiRequest.Execute;
+  response := TStringStream.Create('{}',TEncoding.UTF8);
+  if apiResponse.StatusCode = 200 then
+    begin
+      response.Free;
+      response := TStringStream.Create(apiResponse.Content, TEncoding.UTF8);
+    end;
+  Result := TJSONObject(TJSONObject.ParseJSONValue(response.DataString));
+  FreeAndNil(response);
+end;
+
+function TfrmMain.getOrderPayment(payments: TJSONArray): String;
+const
+  LINE_PAYMENT = '%s - %s - R$ %s';
+var
+  paymts : TStringList;
+  val : TJSONValue;
+  i : Integer;
+begin
+  paymts := TStringList.Create;
+  paymts.Clear;
+  paymts.LineBreak := EmptyStr;
+  if Assigned(payments) then
+    begin
+      if payments.Count > 0 then
+        begin
+          for i := 0 to payments.Count-1 do
+            begin
+              val := payments[i];
+              paymts.Add(
+                Trim(Format(
+                  LINE_PAYMENT,[
+                    val.GetValue<String>('FormaPagamento'),
+                    fmtJsonDate(val.GetValue<String>('DataTransacao.$date'), false),
+                    FormatFloat('#,##0.00', val.GetValue<Extended>('ValorPagamento'))
+
+                  ]
+                ))
+              );
+            end;
+          if payments.Count > 1 then
+            paymts.LineBreak := sLineBreak;
+
+        end;
+    end;
+
+  Result := QuotedStr(paymts.Text);
+end;
+
 function TfrmMain.getURL_HeartBeat: String;
 begin
   Result := EmptyStr;
@@ -692,7 +785,6 @@ procedure TfrmMain.loadToCache(jobs: TJSONObject);
 var
   orders : TJSONArray;
   order : TJSONValue;
-  job_data : TJSONObject;
   strRead : TStringStream;
 begin
   try
@@ -821,6 +913,7 @@ begin
           orderID := concat(order.GetValue<String>('DtoVenda._id.$oid').ToLower,
            ' (',order.GetValue<String>('DtoVenda.Codigo.$numberLong'),') ');
           Variables['ORDER_ID'] := QuotedStr(order.GetValue<String>('DtoVenda.Codigo.$numberLong'));
+          Variables['ORDER_PAYMENT'] := getOrderPayment(order.GetValue<TJSONArray>('DtoVenda.PagamentosVenda'));
 
           //Chamar o Cliente aqui
           cliente := getClientData(order.GetValue<String>('DtoVenda.ClienteId'),
