@@ -1,1 +1,28 @@
-{"filial":[{"_id" : "64f26d9d4469ba70549d202c", "CNPJ":"19503009000143","RazaoSocial":"Morena Show - ITBA","Logradouro":"Avenida Treze","Numero":"691","Cidade":"Ituiutaba","UF":"MG","Bairro":"Centro","Telefone":"(34) 9 9943-1555"},{"_id" : "64f2705f6b00c1f593efd30f", "CNPJ":"86453051000194","RazaoSocial":"Morena Show - CAPN","Logradouro":"R 102","Numero":"711","Cidade":"Capinópolis","UF":"MG","Bairro":"Centro","Telefone":"(34) 9 9943-1555"}]}
+{
+  "filial": [
+    {
+      "_id": "64f26d9d4469ba70549d202c",
+      "CNPJ": "19503009000143",
+      "RazaoSocial": "Morena Show - ITBA",
+      "Logradouro": "Avenida Treze",
+      "Numero": "691",
+      "Cidade": "Ituiutaba",
+      "UF": "MG",
+      "Bairro": "Centro",
+      "Telefone": "(34) 9 9943-1555",
+      "Conexao":{"srv":"db1.wl9.aprendaerp.com.br","user":"forupdev04","senha":"ForU9d3v*","database":"67c96776-7732-4eff-b668-492bc4bbb8b4","usuaid":"67c96776-7732-4eff-b668-492bc4bbb8b4","usuaemail":"morenashow@forupsolucoes.com.br"}
+    },
+    {
+      "_id": "64f2705f6b00c1f593efd30f",
+      "CNPJ": "86453051000194",
+      "RazaoSocial": "Morena Show - CAPN",
+      "Logradouro": "R 102",
+      "Numero": "711",
+      "Cidade": "Capinópolis",
+      "UF": "MG",
+      "Bairro": "Centro",
+      "Telefone": "(34) 9 9943-1555",
+      "Conexao":{"srv":"db1.wl9.aprendaerp.com.br","user":"forupdev04","senha":"ForU9d3v*","database":"67c96776-7732-4eff-b668-492bc4bbb8b4","usuaid":"67c96776-7732-4eff-b668-492bc4bbb8b4","usuaemail":"morenashow@forupsolucoes.com.br"}
+    }
+  ]
+}

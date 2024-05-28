@@ -939,7 +939,6 @@ object frmMain: TfrmMain
         Top = 92
         Width = 35
         Height = 35
-        Caption = 't'
         Flat = True
         Glyph.Data = {
           FA0E0000424DFA0E000000000000360000002800000023000000230000000100
@@ -11545,6 +11544,7 @@ object frmMain: TfrmMain
       'http://localhost:9090/cliente/65d73f13907257b5fc5d390a/195030090' +
       '00143'
     Params = <>
+    ConnectTimeout = 60000
     SynchronizedEvents = False
     Left = 456
     Top = 464
@@ -11566,5 +11566,25 @@ object frmMain: TfrmMain
     Connection = conLocal
     Left = 155
     Top = 491
+  end
+  object mongoDB: TUniConnection
+    ProviderName = 'MongoDB'
+    LoginPrompt = False
+    Left = 291
+    Top = 323
+  end
+  object mongoQry: TUniQuery
+    Connection = mongoDB
+    Left = 291
+    Top = 379
+  end
+  object mongoCMD: TUniQuery
+    Connection = mongoDB
+    Left = 291
+    Top = 435
+  end
+  object provider: TMongoDBUniProvider
+    Left = 371
+    Top = 323
   end
 end

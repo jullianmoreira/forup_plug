@@ -73,7 +73,7 @@ begin
           );
         end;
 
-      if Assigned(FOnlineSvcChk) then
+      {if Assigned(FOnlineSvcChk) then
         begin
           // Verifica o status da variável booleana
           Synchronize(
@@ -87,7 +87,7 @@ begin
                 end;
             end
           );
-        end;
+        end;}
 
       if Assigned(FSpoolerChk) then
         begin
