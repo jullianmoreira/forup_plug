@@ -1,7 +1,54 @@
-Projeto dividido em duas partes
-- Serviço online de integração para impressão de documentos
-- Serviço local que controla a impressão e possibilita personalização nos impressos.
+# 🖨️ **Sistema de Integração e Controle de Impressão**
 
-Banco de Dados online PostgreSQL
-Banco de Dados do ERP MongoDB
-Banco de Dados Local SQLite
+Bem-vindo ao **Sistema de Integração e Controle de Impressão**, uma solução moderna e eficiente para gerenciar e personalizar impressões em diferentes ambientes. 🚀
+
+---
+
+## 🌟 **Visão Geral**
+
+Este projeto foi desenvolvido para atender às necessidades de integração e controle de impressão, oferecendo flexibilidade e robustez.  
+**Dividido em duas partes principais**, ele combina a eficiência de um serviço online com a personalização e controle de um serviço local.
+
+---
+
+## 🔗 **Partes do Sistema**
+
+### **1️⃣ Serviço Online de Integração**
+- Gerencia a comunicação com sistemas externos via APIs.
+- Responsável por centralizar as solicitações de impressão.
+- Alimentado por um banco de dados online **PostgreSQL** para maior desempenho e escalabilidade.
+- Foco na **disponibilidade 24/7** e alta segurança.
+
+### **2️⃣ Serviço Local de Controle**
+- Atua diretamente nos dispositivos de impressão.
+- Permite personalização detalhada dos documentos antes da impressão.
+- Conexão com banco de dados local **SQLite**, garantindo operações rápidas e independência em situações offline.
+- Comunicação direta com o **ERP**, utilizando o banco de dados **MongoDB**.
+
+---
+
+## 🛠️ **Principais Tecnologias**
+- **PostgreSQL**: Banco de dados online para integração segura e confiável.
+- **MongoDB**: Utilizado pelo ERP para garantir alta performance em consultas.
+- **SQLite**: Banco de dados leve para operações locais rápidas e confiáveis.
+- **RESTful APIs**: Para comunicação entre os serviços online e locais.
+
+---
+
+## 🚀 **Funcionalidades**
+- **Impressão Integrada**: Solicitações de impressão sincronizadas com o ERP.
+- **Personalização Avançada**: Ajuste de layout, formatação e outros parâmetros antes da impressão.
+- **Monitoramento em Tempo Real**: Controle sobre todas as solicitações e status de impressão.
+- **Compatibilidade Universal**: Suporte para diversas marcas e modelos de impressoras.
+
+---
+
+## 🏗️ **Arquitetura**
+```plaintext
+[Usuário/ERP] 
+     ↓ (API REST)
+[Serviço Online - PostgreSQL]
+     ↓ (Sincronização)
+[Serviço Local - SQLite & MongoDB]
+     ↓
+[Dispositivo de Impressão]
