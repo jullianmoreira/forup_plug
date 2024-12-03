@@ -52,3 +52,12 @@ Este projeto foi desenvolvido para atender às necessidades de integração e co
 [Serviço Local - SQLite & MongoDB]
      ↓
 [Dispositivo de Impressão]
+
+📦 forup_plug
+├── 📁 forup_client_plug      # Módulo cliente do sistema
+├── 📁 forup_online_plug      # Serviço de integração online
+├── 📁 release                # Arquivos para distribuição
+├── 📄 .gitattributes         # Configurações de atributos Git
+├── 📄 .gitignore             # Arquivos ignorados pelo Git
+├── 📄 LICENSE                # Licença do projeto
+└── 📄 README.md              # Documentação do projeto
