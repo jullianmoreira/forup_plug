@@ -1,0 +1,28 @@
+{
+  "filial": [
+    {
+      "_id": "",
+      "CNPJ": "",
+      "RazaoSocial": "",
+      "Logradouro": "",
+      "Numero": "",
+      "Cidade": "",
+      "UF": "",
+      "Bairro": "",
+      "Telefone": "",
+      "Conexao":{"srv":"","user":"","senha":"","database":"","usuaid":"","usuaemail":""}
+    },
+    {
+      "_id": "",
+      "CNPJ": "",
+      "RazaoSocial": "",
+      "Logradouro": "",
+      "Numero": "",
+      "Cidade": "",
+      "UF": "",
+      "Bairro": "",
+      "Telefone": "",
+      "Conexao":{"srv":"","user":"","senha":"","database":"","usuaid":"","usuaemail":""}
+    }
+  ]
+}

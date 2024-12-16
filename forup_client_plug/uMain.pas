@@ -15,7 +15,8 @@ uses
   FireDAC.Phys.SQLiteWrapper.Stat, Datasnap.DBClient, REST.Types, REST.Client,
   Data.Bind.Components, Data.Bind.ObjectScope, System.DateUtils,
   FireDAC.Stan.Param, FireDAC.DatS, FireDAC.DApt.Intf, FireDAC.DApt,
-  FireDAC.Comp.DataSet, System.Generics.Collections;
+  FireDAC.Comp.DataSet, System.Generics.Collections, MemDS, DBAccess, Uni,
+  UniProvider, MongoDBUniProvider, MongoObjectsUni, System.Zip;
 
 const
   FMT_LOGLINE = '%s -> %s -> %s';
@@ -116,7 +117,17 @@ type
     { Private declarations }
     checkThread : TServiceChecker;
     thisFilial : TJSONObject;
+    monoConexao : TJSONValue;
     EmprID, EmprCNPJ : String;
+
+    procedure updateDtoVenda(id : String);
+
+    procedure mongoEnv;
+    function mongoLib32 : String;
+    function mongoLib64 : String;
+
+    procedure ConectarMongo;
+    procedure DesconectarMongo;
 
     function concatStr(aData : TArray<String>) : String;
     function coalesce(aData : TArray<String>) : String;
@@ -142,6 +153,9 @@ type
     function getClientData(id, cnpj : String) : TJSONObject;
     function getJobsFromServer : TJSONObject;
     function getOrderFromServer(cod : String) : TJSONObject;
+    function getClientData_(id, cnpj : String) : TJSONObject;
+    function getJobsFromServer_ : TJSONObject;
+    function getOrderFromServer_(cod : String) : TJSONObject;
   public
     { Public declarations }
     cfgFile : TIniFile;
@@ -201,7 +215,7 @@ begin
         DoingAction := true;
         case cbPrintTime.ItemIndex of
           0 : begin
-              order := getOrderFromServer(edtPediCodigo.Text);
+              order := getOrderFromServer_(edtPediCodigo.Text);
 
               if order.GetValue<TJSONArray>('orders').Count > 0 then
                 begin
@@ -213,7 +227,7 @@ begin
                     Format(
                       FMT_LOGLINE,
                       [getFmtTime,
-                      'VENDA NÃO LOCALIZADA',
+                      'VENDA Nï¿½O LOCALIZADA',
                       'VENDA: "'+edtPediCodigo.Text+'"'
                       ]
                     )
@@ -260,7 +274,7 @@ begin
     cfgFile.WriteString(INI_SECTION_LOCAL_CONFIG, INI_OPTION_DEFAULT_PRINTER, cbTicketPrinter.Text);
     cfgFile.WriteString(INI_SECTION_LOCAL_CONFIG, INI_OPTION_DEFAULT_MODEL, cbPrintModel.Text);
     cfgFile.WriteInteger(INI_SECTION_LOCAL_CONFIG, INI_OPTION_DEFAULT_TIMER, spPrintInterval.Value);
-    MessageDlg('Configuração Salva!',TMsgDlgType.mtInformation, [TMsgDlgBtn.mbOK], 0);
+    MessageDlg('Configuraï¿½ï¿½o Salva!',TMsgDlgType.mtInformation, [TMsgDlgBtn.mbOK], 0);
   finally
     btUpdateConfig.Enabled := true;
   end;
@@ -285,6 +299,7 @@ procedure TfrmMain.CheckEnviorment;
 var
   timerVal : Integer;
   midas : TResourceStream;
+
 begin
   cfgFile := getCFGFile;
 
@@ -292,6 +307,8 @@ begin
     TDirectory.CreateDirectory(getAppPath+CLIENT_PATH);
   if not TDirectory.Exists(getAppPath+REPORT_PATH) then
     TDirectory.CreateDirectory(getAppPath+REPORT_PATH);
+
+  mongoEnv;
 
   {$IFDEF WIN32}
     midas := TResourceStream.Create(HInstance, 'MIDAS32', RT_RCDATA);
@@ -307,6 +324,9 @@ begin
 
   SetFilial;
 
+  ConectarMongo;
+  CallBackOnlineService(OnlineServiceActive);
+
   LocalCache;
 
   timerVal := cfgFile.ReadInteger(INI_SECTION_LOCAL_CONFIG, INI_OPTION_DEFAULT_TIMER, 30);
@@ -315,10 +335,10 @@ begin
   service.Enabled := true;
 
   checkThread := TServiceChecker.Create(
-    @LocalServiceActive, @OnlineServiceActive, @SpoolerActive,
-    CallBackLocalService, CallBackOnlineService, CallBackSpooler
+    @LocalServiceActive, nil, @SpoolerActive,
+    CallBackLocalService, nil, CallBackSpooler
   );
-  checkThread.OnlineChecker := CheckOnlineService;
+  checkThread.OnlineChecker := nil;
   checkThread.SpoolerChecker := CheckSpooler;
   checkThread.LocalChecker := CheckLocarService;
 
@@ -348,18 +368,18 @@ begin
       begin
         memLog.Lines.Add(Format(
           FMT_LOGLINE, [
-            getFmtTime, 'CHECAGEM DO HOST', 'Sem configuração de Host do Serviço Online'
+            getFmtTime, 'CHECAGEM DO HOST', 'Sem configuraï¿½ï¿½o de Host do Serviï¿½o Online'
           ]
         ));
       end
     else
       begin
-        // Verifica se há conexão com a internet local
+        // Verifica se hï¿½ conexï¿½o com a internet local
         dwAccessType := INTERNET_OPEN_TYPE_DIRECT;
         hInternet := InternetOpen(nil, dwAccessType, nil, nil, 0);
         if hInternet <> nil then
         begin
-          // Abre uma conexão com o URL especificado
+          // Abre uma conexï¿½o com o URL especificado
           dwFlags := 0;
           hConnect := InternetOpenUrl(hInternet, PChar(URL), nil, 0, dwFlags, 0);
           if hConnect <> nil then
@@ -370,7 +390,7 @@ begin
           end
           else
             begin
-              setStatusImagem(ssOnline, RED_STATUS); // O serviço não está respondendo
+              setStatusImagem(ssOnline, RED_STATUS); // O serviï¿½o nï¿½o estï¿½ respondendo
               InternetCloseHandle(hInternet);
               memLog.Lines.Add(Format(
                 FMT_LOGLINE, [
@@ -382,7 +402,7 @@ begin
         else
           memLog.Lines.Add(Format(
           FMT_LOGLINE, [
-            getFmtTime, 'CHECAGEM DO HOST', 'Sem conexão com a internet'
+            getFmtTime, 'CHECAGEM DO HOST', 'Sem conexï¿½o com a internet'
           ]
         ));
       end;
@@ -408,11 +428,11 @@ begin
     LimparLog;
     if ServiceManager <> 0 then
     begin
-      // Abre o serviço de spooler
+      // Abre o serviï¿½o de spooler
       ServiceHandle := OpenService(ServiceManager, 'Spooler', SERVICE_QUERY_STATUS);
       if ServiceHandle <> 0 then
       begin
-        // Verifica o status do serviço
+        // Verifica o status do serviï¿½o
         if QueryServiceStatus(ServiceHandle, ServiceStatus) then
         begin
           case ServiceStatus.dwCurrentState of
@@ -425,21 +445,21 @@ begin
         end
         else
           memLog.Lines.Add(Format(FMT_LOGLINE,[
-            getFmtTime, 'CHECAGEM DE SPOOLER', 'Erro ao consultar o status do Spooler de Impressão'])
+            getFmtTime, 'CHECAGEM DE SPOOLER', 'Erro ao consultar o status do Spooler de Impressï¿½o'])
           );
-        // Fecha o handle do serviço
+        // Fecha o handle do serviï¿½o
         CloseServiceHandle(ServiceHandle);
       end
       else
         memLog.Lines.Add(Format(FMT_LOGLINE,[
-            getFmtTime, 'CHECAGEM DE SPOOLER', 'Erro ao abrir o serviço de spooler'])
+            getFmtTime, 'CHECAGEM DE SPOOLER', 'Erro ao abrir o serviï¿½o de spooler'])
           );
-      // Fecha o gerenciador de serviços
+      // Fecha o gerenciador de serviï¿½os
       CloseServiceHandle(ServiceManager);
     end
     else
       memLog.Lines.Add(Format(FMT_LOGLINE,[
-            getFmtTime, 'CHECAGEM DE SPOOLER', 'Erro ao abrir o gerenciador de serviços'])
+            getFmtTime, 'CHECAGEM DE SPOOLER', 'Erro ao abrir o gerenciador de serviï¿½os'])
           );
   except
     on e : exception do
@@ -453,7 +473,7 @@ end;
 
 procedure TfrmMain.CloseMe;
 begin
-  if MessageDlg('Deseja fechar o assistente de impressão?',TMsgDlgType.mtConfirmation,
+  if MessageDlg('Deseja fechar o assistente de impressï¿½o?',TMsgDlgType.mtConfirmation,
     [TMsgDlgBtn.mbYes, TMsgDlgBtn.mbNo], 0) = mrYes then
     begin
       Application.Terminate;
@@ -483,6 +503,59 @@ begin
   Result := EmptyStr;
   for i := Low(aData) to High(aData) do
     Result := Result + aData[i];
+end;
+
+procedure TfrmMain.ConectarMongo;
+begin
+if monoConexao <> nil then
+    begin
+      with mongoDB do
+        begin
+          Close;
+
+          {$IFDEF WIN32}
+            SpecificOptions.Values['MongoDB.BSONLibrary'] := mongoLib32+'libbson-1.0.dll';
+            SpecificOptions.Values['MongoDB.ClientLibrary'] := mongoLib32+'libmongoc-1.0.dll';
+          {$ELSE}
+            SpecificOptions.Values['MongoDB.BSONLibrary'] := mongoLib64+'libbson-1.0.dll';
+            SpecificOptions.Values['MongoDB.ClientLibrary'] := mongoLib64+'libmongoc-1.0.dll';
+          {$ENDIF}
+
+
+          SpecificOptions.Values['MongoDB.ConnectionFormat'] := 'cfStandard';
+
+          Database := monoConexao.GetValue<String>('database');
+          Port := 27017;
+          Server := monoConexao.GetValue<String>('srv');
+          Username := monoConexao.GetValue<String>('user');
+          Password := monoConexao.GetValue<String>('senha');
+          try
+            Connect;
+            OnlineServiceActive := Connected;
+          except
+            on e : Exception do
+              begin
+                memLog.Lines.Add(
+                  Format(
+                    FMT_LOGLINE,
+                    [getFmtTime,
+                    'ERRO AO CONECTAR NO BANCO ONLINE',
+                    e.Message]
+                  )
+                )
+              end;
+          end;
+        end;
+    end;
+end;
+
+procedure TfrmMain.DesconectarMongo;
+begin
+  if mongoDB.InTransaction then
+    mongoDB.Commit;
+
+  mongoDB.Close;
+  OnlineServiceActive := false;
 end;
 
 function TfrmMain.fmtJsonDate(aDate : String; withHour : Boolean = true) : String;
@@ -586,22 +659,62 @@ end;
 
 function TfrmMain.getClientData(id, cnpj: String): TJSONObject;
 begin
+  try
+    apiClient.BaseURL := Concat(cfgFile.ReadString(INI_SECTION_LOCAL_CONFIG, INI_OPTION_HOST, 'http://localhost:9090'),
+    '/cliente/',
+    id,'/',cnpj);
+    apiRequest.Method := rmGET;
+    apiRequest.Execute;
 
-  apiClient.BaseURL := Concat(cfgFile.ReadString(INI_SECTION_LOCAL_CONFIG, INI_OPTION_HOST, 'http://localhost:9090'),
-  '/cliente/',
-  id,'/',cnpj);
-  apiRequest.Method := rmGET;
-  apiRequest.Execute;
+    if apiResponse.StatusCode = 200 then
+      begin
+        Result := TJSONObject(TJSONObject.ParseJSONValue(apiResponse.Content));
+      end
+    else
+      Result := TJSONObject.Create;
 
-  if apiResponse.StatusCode = 200 then
-    begin
-      Result := TJSONObject(TJSONObject.ParseJSONValue(apiResponse.Content));
-    end
-  else
-    Result := TJSONObject.Create;
+    apiClient.Disconnect;
+  except
+    on e : Exception do
+      begin
+        memLog.Lines.Add(
+          Format(
+            FMT_LOGLINE,
+            [getFmtTime, 'ERRO AO BUSCAR DADOS DO CLIENTE', e.Message]
+          )
+        )
+      end;
+  end;
 
-  apiClient.Disconnect;
+end;
 
+function TfrmMain.getClientData_(id, cnpj: String): TJSONObject;
+begin
+  try
+    with mongoQry do
+      begin
+        Close;
+        Sql.Clear;
+        Sql.Add('{"find":"DtoPessoa", "filter":{"_id": {"$oid": "'+id+'"}}}');
+        Open;
+
+        if not IsEmpty then
+          begin
+            First;
+            Result := TJSONObject(TJSONObject.ParseJSONValue(TMongoDocument(GetObject('DtoPessoa')).Text));
+          end;
+      end;
+  except
+    on e : Exception do
+      begin
+        memLog.Lines.Add(
+          Format(
+            FMT_LOGLINE,
+            [getFmtTime, 'ERRO AO BUSCAR DADOS DO CLIENTE', e.Message]
+          )
+        )
+      end;
+  end;
 end;
 
 function TfrmMain.getFmtTime: String;
@@ -622,8 +735,18 @@ var
 begin
   LimparLog;
   DoingAction := true;
-  onlineJobs := getJobsFromServer;
-  if onlineJobs.ToJSON <> '{}' then
+  if not mongoDB.Connected then
+    ConectarMongo;
+
+  onlineJobs := getJobsFromServer_;
+  if Assigned(onlineJobs) then
+    begin
+      if onlineJobs.GetValue<TJSONArray>('orders').Count > 0 then
+        begin
+          loadToCache(onlineJobs);
+        end;
+    end;
+  (*if onlineJobs.ToJSON <> '{}' then
     begin
       if onlineJobs.TryGetValue<TJSONArray>('jobs_waiting', jobsWaiting) then
         begin
@@ -633,7 +756,10 @@ begin
               loadToCache(TJSONObject(job));
             end;
         end;
-    end;
+    end;*)
+  if mongoDB.Connected then
+    DesconectarMongo;
+
   DoingAction := false;
 end;
 
@@ -642,6 +768,7 @@ var
   lastOne : String;
   response : TStringStream;
 begin
+  try
   lastOne := cfgFile.ReadString(INI_SECTION_LOCAL_CONFIG, INI_OPTION_CLIENT_LAST_PRINT, '-1');
 
   apiClient.BaseURL := Concat(getHost, '/jobs/',
@@ -656,24 +783,218 @@ begin
     end;
   Result := TJSONObject(TJSONObject.ParseJSONValue(response.DataString));
   FreeAndNil(response);
+  except
+    on e : exception do
+      begin
+        memLog.Lines.Add(
+          Format(
+            FMT_LOGLINE,
+            [getFmtTime, 'ERRO AO BUSCAR PEDIDOS', e.Message]
+          )
+        )
+      end;
+  end;
+end;
+
+function TfrmMain.getJobsFromServer_: TJSONObject;
+var
+  mDoc : TMongoDocument;
+  jobData : TJSONObject;
+
+  DtoVenda : TJSONArray;
+  DtoVendaProduto : TJSONArray;
+  iVenda: Integer;
+  LastPrinted : String;
+begin
+  try
+    jobData := TJSONObject.Create(TJSONPair.Create('orders',TJSONValue(TJSONArray.Create)));
+    LastPrinted := getCFGFile.ReadString(INI_SECTION_LOCAL_CONFIG, INI_OPTION_CLIENT_LAST_PRINT, '');
+
+    if OnlineServiceActive and (LastPrinted.IsEmpty = false) then
+      begin
+        with mongoQry do
+          begin
+            Close;
+            Sql.Clear;
+            Sql.Add('{"find":"DtoVenda", "filter":{"Codigo":{$gt:'+LastPrinted+'}, '+
+              '"Impresso": false, "OrigemVenda":{$in:["PDV Mobi","PDV","Venda Direta","Pedido Faturado"]}, "EmpresaId":"'+EmprID+'"}}');
+            Open;
+
+            DtoVenda := TJSONArray.Create;
+            if not IsEmpty then
+              begin
+                First;
+                while not Eof do
+                  begin
+                    mDoc := TMongoDocument(GetObject('DtoVenda'));
+                    updateDtoVenda(mDoc.FieldByName['_id'].GetData.AsString.ToLower);
+                    DtoVenda.AddElement(TJSONObject.ParseJSONValue(mDoc.Text));
+                    Next;
+                  end;
+              end;
+
+            if DtoVenda.Count > 0 then
+              begin
+                DtoVendaProduto := TJSONArray.Create;
+                for iVenda := 0 to DtoVenda.Count-1 do
+                  begin
+                    Close;
+                    Sql.Clear;
+                    Sql.Add('{"find":"DtoVendaProduto", "filter":{"VendaID":"'+
+                      DtoVenda.Items[iVenda].GetValue<String>('_id.$oid').ToLower
+                    +'"}}');
+                    Open;
+
+                    if not IsEmpty then
+                      begin
+                        First;
+                        while not Eof do
+                          begin
+                            mDoc := TMongoDocument(GetObject('DtoVendaProduto'));
+                            DtoVendaProduto.AddElement(TJSONObject.ParseJSONValue(mDoc.Text));
+                            Next;
+                          end;
+                      end;
+
+                    jobData.GetValue<TJSONArray>('orders').AddElement(
+                      TJSONObject.ParseJSONValue('{"DtoVenda":'+TJSONValue(DtoVenda.Items[iVenda]).ToJSON+','+
+                        '"DtoVendaProduto":'+TJSONValue(DtoVendaProduto).ToJSON+'}')
+                    );
+                  end;
+
+              end;
+          end;
+      end;
+  Result := jobData;
+  except
+    on e : exception do
+      begin
+        memLog.Lines.Add(
+          Format(
+            FMT_LOGLINE,
+            [getFmtTime, 'ERRO AO BUSCAR PEDIDOS', e.Message]
+          )
+        )
+      end;
+  end;
 end;
 
 function TfrmMain.getOrderFromServer(cod: String): TJSONObject;
 var
   response : TStringStream;
 begin
-  apiClient.BaseURL := Concat(getHost, '/order/',
-    cod, '/', EmprCNPJ, '/', EmprID );
-  apiRequest.Method := rmGET;
-  apiRequest.Execute;
-  response := TStringStream.Create('{}',TEncoding.UTF8);
-  if apiResponse.StatusCode = 200 then
-    begin
-      response.Free;
-      response := TStringStream.Create(apiResponse.Content, TEncoding.UTF8);
-    end;
-  Result := TJSONObject(TJSONObject.ParseJSONValue(response.DataString));
-  FreeAndNil(response);
+  try
+    apiClient.BaseURL := Concat(getHost, '/order/',
+      cod, '/', EmprCNPJ, '/', EmprID );
+    apiRequest.Method := rmGET;
+    apiRequest.Execute;
+    response := TStringStream.Create('{}',TEncoding.UTF8);
+    if apiResponse.StatusCode = 200 then
+      begin
+        response.Free;
+        response := TStringStream.Create(apiResponse.Content, TEncoding.UTF8);
+      end;
+    Result := TJSONObject(TJSONObject.ParseJSONValue(response.DataString));
+    FreeAndNil(response);
+  except
+    on e : Exception do
+      begin
+        memLog.Lines.Add(
+          Format(
+            FMT_LOGLINE,
+            [getFmtTime, 'ERRO AO BUSCAR PEDIDO', e.Message]
+          )
+        )
+      end;
+
+  end;
+end;
+
+function TfrmMain.getOrderFromServer_(cod: String): TJSONObject;
+var
+  mDoc : TMongoDocument;
+  jobData : TJSONObject;
+
+  DtoVenda : TJSONArray;
+  DtoVendaProduto : TJSONArray;
+  iVenda: Integer;
+begin
+  try
+    jobData := TJSONObject.Create(TJSONPair.Create('orders',TJSONValue(TJSONArray.Create)));
+
+    if OnlineServiceActive and (cod.IsEmpty=false) then
+      begin
+        with mongoQry do
+          begin
+            Close;
+            Sql.Clear;
+            Sql.Add('{"find":"DtoVenda", "filter":{"Codigo":' + cod +
+              ', "EmpresaId":"'+EmprID+'"}}');
+            Open;
+
+            DtoVenda := TJSONArray.Create;
+            if not IsEmpty then
+              begin
+                First;
+                while not Eof do
+                  begin
+                    mDoc := TMongoDocument(GetObject('DtoVenda'));
+                    updateDtoVenda(mDoc.FieldByName['_id'].GetData.AsString.ToLower);
+                    DtoVenda.AddElement(TJSONObject.ParseJSONValue(mDoc.Text));
+                    Next;
+                  end;
+              end;
+
+            if DtoVenda.Count > 0 then
+              begin
+                DtoVendaProduto := TJSONArray.Create;
+                for iVenda := 0 to DtoVenda.Count-1 do
+                  begin
+                    Close;
+                    Sql.Clear;
+                    Sql.Add('{"find":"DtoVendaProduto", "filter":{"VendaID":"'+
+                      DtoVenda.Items[iVenda].GetValue<String>('_id.$oid').ToLower
+                    +'"}}');
+                    Open;
+
+                    if not IsEmpty then
+                      begin
+                        First;
+                        while not Eof do
+                          begin
+                            mDoc := TMongoDocument(GetObject('DtoVendaProduto'));
+                            DtoVendaProduto.AddElement(TJSONObject.ParseJSONValue(mDoc.Text));
+                            Next;
+                          end;
+                      end;
+
+                    jobData.GetValue<TJSONArray>('orders').AddElement(
+                      TJSONObject.ParseJSONValue('{"DtoVenda":'+TJSONValue(DtoVenda.Items[iVenda]).ToJSON+','+
+                        '"DtoVendaProduto":'+TJSONValue(DtoVendaProduto).ToJSON+'}')
+                    );
+                  end;
+              end;
+          end;
+      end;
+
+      Result := jobData;
+  except
+    on e : exception do
+      begin
+        Result := TJSONObject(TJSONObject.ParseJSONValue('{"orders":[]}'));
+
+        memLog.Lines.Add(
+          Format(
+            FMT_LOGLINE,
+            [getFmtTime,
+            'ERRO AO BUSCAR O PEDIDO ONLINE',
+            e.Message
+            ]
+          )
+        )
+      end;
+  end;
+
 end;
 
 function TfrmMain.getOrderPayment(payments: TJSONArray): String;
@@ -787,7 +1108,6 @@ procedure TfrmMain.loadToCache(jobs: TJSONObject);
 var
   orders : TJSONArray;
   order : TJSONValue;
-  strRead : TStringStream;
 begin
   try
     conLocal.StartTransaction;
@@ -796,14 +1116,16 @@ begin
         Close;
         Sql.Clear;
         Sql.Add('INSERT OR REPLACE INTO job_cache (job_id, job_data)');
-        Sql.Add('VALUES ('+QuotedStr(jobs.GetValue<String>('id'))+
-        ','+QuotedStr(jobs.GetValue<String>('job_data'))+');');
+        //Sql.Add('VALUES ('+QuotedStr(jobs.GetValue<String>('id'))+
+        Sql.Add('VALUES (null'+
+        //','+QuotedStr(jobs.GetValue<String>('job_data'))+');');
+        ','+QuotedStr(jobs.ToJSON)+');');
         ExecSQL;
       end;
     conLocal.Commit;
 
-  strRead := TStringStream.Create(jobs.GetValue<String>('job_data'), TEncoding.UTF8);
-  orders := TJSONObject.ParseJSONValue(strRead.DataString).GetValue<TJSONArray>('orders');
+  //strRead := TStringStream.Create(jobs.GetValue<String>('job_data'), TEncoding.UTF8);
+  orders := jobs.GetValue<TJSONArray>('orders');
   for order in orders do
     begin
       printOrder(TJSONObject(order));
@@ -816,7 +1138,8 @@ begin
           Format(
             FMT_LOGLINE,[
               getFmtTime,
-              'Erro ao gravar o trabalho('+QuotedStr(jobs.GetValue<String>('id'))+') no cache',
+              //'Erro ao gravar o trabalho('+QuotedStr(jobs.GetValue<String>('id'))+') no cache',
+              'Erro ao gravar o trabalho no cache',
               e.Message
             ]
           )
@@ -855,6 +1178,50 @@ begin
           );
         end;
     end;
+end;
+
+procedure TfrmMain.mongoEnv;
+var
+  aResource : TResourceStream;
+  aZip : TZipFile;
+begin
+    {$IFDEF WIN32}
+      if not TDirectory.Exists(mongoLib32) then
+      TDirectory.CreateDirectory(mongoLib32);
+      if not TFile.Exists(mongoLib32+'libmongoc-1.0.dll') then
+        begin
+          if Assigned(aResource) then
+            FreeAndNil(aResource);
+
+          aResource := TResourceStream.Create(hInstance, 'MONGO32', RT_RCDATA);
+          aZip := TZipFile.Create;
+          aZip.Open(aResource, zmRead);
+          aZip.ExtractAll(mongoLib32);
+        end;
+    {$ELSE}
+      if not TDirectory.Exists(mongoLib64) then
+        TDirectory.CreateDirectory(mongoLib64);
+      if not TFile.Exists(mongoLib64+'libmongoc-1.0.dll') then
+        begin
+          if Assigned(aResource) then
+            FreeAndNil(aResource);
+
+          aResource := TResourceStream.Create(hInstance, 'MONGO64', RT_RCDATA);
+          aZip := TZipFile.Create;
+          aZip.Open(aResource, zmRead);
+          aZip.ExtractAll(mongoLib64);
+        end;
+    {$ENDIF}
+end;
+
+function TfrmMain.mongoLib32: String;
+begin
+  Result := getAppPath+'lib'+PathDelim+'mongo32'+PathDelim;
+end;
+
+function TfrmMain.mongoLib64: String;
+begin
+  Result := getAppPath+'lib'+PathDelim+'mongo64'+PathDelim;
 end;
 
 procedure TfrmMain.popCloseSystemClick(Sender: TObject);
@@ -916,12 +1283,12 @@ begin
            ' (',order.GetValue<String>('DtoVenda.Codigo.$numberLong'),') ');
           Variables['ORDER_ID'] := QuotedStr(order.GetValue<String>('DtoVenda.Codigo.$numberLong'));
           if order.GetValue<TJSONValue>('DtoVenda.PagamentosVenda') is TJSONNull then
-            Variables['ORDER_PAYMENT'] := QuotedStr('Forma de Pgto não informada')
+            Variables['ORDER_PAYMENT'] := QuotedStr('Forma de Pgto nï¿½o informada')
           else
             Variables['ORDER_PAYMENT'] := getOrderPayment(order.GetValue<TJSONArray>('DtoVenda.PagamentosVenda'));
 
           //Chamar o Cliente aqui
-          cliente := getClientData(order.GetValue<String>('DtoVenda.ClienteId'),
+          cliente := getClientData_(order.GetValue<String>('DtoVenda.ClienteId'),
             cfgFile.ReadString(INI_SECTION_LOCAL_CONFIG, INI_OPTION_CLIENT_CNPJ, ''));
 
           if cliente.TryGetValue<String>('Cliente', strTeste) then
@@ -1047,16 +1414,19 @@ begin
           thisFilial.GetValue<String>('CNPJ')+' -> '+thisFilial.GetValue<String>('RazaoSocial')
         ])
       );
+
+      monoConexao := thisFilial.GetValue<TJSONValue>('Conexao');
     end
   else
     begin
       memLog.Lines.Add(
         Format(FMT_LOGLINE, [
           getFmtTime,
-          'EMPRESA NÃO CARREGADA',
+          'EMPRESA Nï¿½O CARREGADA',
           'CNPJ CONFIGURADO: '+thisCNPJ
         ])
       );
+      monoConexao := TJSONObject.ParseJSONValue('{"srv":"","user":"","senha":"","database":"","usuaid":"","usuaemail":""}');
     end;
 end;
 
@@ -1088,6 +1458,32 @@ end;
 procedure TfrmMain.trayIconDblClick(Sender: TObject);
 begin
   ShowMe;
+end;
+
+procedure TfrmMain.updateDtoVenda(id: String);
+begin
+  try
+  with mongoCMD do
+    begin
+      Close;
+      Sql.Clear;
+      Sql.Text := '{"update":"DtoVenda", "updates":[{"q":{"_id": {"$oid":"'+id+'"}},"u":{"$set":{"Impresso":true}}}]}';
+      ExecSQL;
+    end;
+  except
+    on e : exception do
+      begin
+        memLog.Lines.Add(
+          Format(
+            FMT_LOGLINE,
+            [getFmtTime,
+            'ERRO AO ATUALIZAR A VENDA PARA IMPRESSO',
+            e.Message]
+          )
+        )
+      end;
+
+  end;
 end;
 
 procedure TfrmMain.updateJobStatus(id: String);

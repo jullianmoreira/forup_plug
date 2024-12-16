@@ -1,19 +1,20 @@
 object conn_module: Tconn_module
   OnCreate = DataModuleCreate
-  Height = 496
-  Width = 880
+  Height = 620
+  Width = 1100
+  PixelsPerInch = 120
   object fup_manager: TFDManager
     WaitCursor = gcrDefault
     FormatOptions.AssignedValues = [fvMapRules]
     FormatOptions.OwnMapRules = True
     FormatOptions.MapRules = <>
     Active = True
-    Left = 64
-    Top = 32
+    Left = 80
+    Top = 40
   end
   object fup_postgre: TFDConnection
-    Left = 64
-    Top = 96
+    Left = 80
+    Top = 120
   end
   object fup_mongo: TUniConnection
     DataTypeMap = <
@@ -46,35 +47,35 @@ object conn_module: Tconn_module
     Username = 'forupdev08'
     Server = 'db1.wl10.aprendaerp.com.br'
     LoginPrompt = False
-    Left = 144
-    Top = 96
+    Left = 180
+    Top = 120
     EncryptedPassword = 'B9FF90FF8DFFAAFFC6FF9BFFCCFF89FFD5FF'
   end
   object fup_mongo_provider: TMongoDBUniProvider
-    Left = 272
-    Top = 56
+    Left = 340
+    Top = 70
   end
   object pg_driver: TFDPhysPgDriverLink
-    Left = 424
-    Top = 32
+    Left = 530
+    Top = 40
   end
   object fup_sqlite: TFDConnection
-    Left = 64
-    Top = 160
+    Left = 80
+    Top = 200
   end
   object fdWait: TFDGUIxWaitCursor
     Provider = 'Console'
     ScreenCursor = gcrDefault
-    Left = 424
-    Top = 96
+    Left = 530
+    Top = 120
   end
   object mysql_driver: TFDPhysMySQLDriverLink
-    Left = 424
-    Top = 160
+    Left = 530
+    Top = 200
   end
   object mssql_driver: TFDPhysMSSQLDriverLink
-    Left = 424
-    Top = 224
+    Left = 530
+    Top = 280
   end
   object pgQryList: TFDQuery
     Connection = fup_postgre
@@ -83,22 +84,22 @@ object conn_module: Tconn_module
     ResourceOptions.AssignedValues = [rvParamCreate, rvParamExpand]
     ResourceOptions.ParamCreate = False
     ResourceOptions.ParamExpand = False
-    Left = 64
-    Top = 240
+    Left = 80
+    Top = 300
   end
   object mongoQryList: TUniQuery
     Connection = fup_mongo
-    Left = 280
-    Top = 160
+    Left = 350
+    Top = 200
   end
   object pgCmd: TFDCommand
     Connection = fup_postgre
-    Left = 64
-    Top = 304
+    Left = 80
+    Top = 380
   end
   object mongoUpdQry: TUniQuery
     Connection = fup_mongo
-    Left = 280
-    Top = 224
+    Left = 350
+    Top = 280
   end
 end
