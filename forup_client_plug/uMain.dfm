@@ -732,8 +732,8 @@ object frmMain: TfrmMain
         Caption = 'Segundos'
       end
       object btUpdateConfig: TSpeedButton
-        Left = 422
-        Top = 73
+        Left = 431
+        Top = 82
         Width = 45
         Height = 45
         Flat = True
@@ -1074,6 +1074,13 @@ object frmMain: TfrmMain
         Caption = 'Reimprimir Pedido'
         WordWrap = True
       end
+      object Label10: TLabel
+        Left = 431
+        Top = 24
+        Width = 69
+        Height = 15
+        Caption = 'N'#176' de C'#243'pias'
+      end
       object cbTicketPrinter: TComboBox
         Left = 15
         Top = 45
@@ -1131,6 +1138,16 @@ object frmMain: TfrmMain
         Items.Strings = (
           'Atualizado'
           'Armazenado')
+      end
+      object edtNumCopias: TSpinEdit
+        Left = 431
+        Top = 45
+        Width = 69
+        Height = 24
+        MaxValue = 0
+        MinValue = 0
+        TabOrder = 6
+        Value = 2
       end
     end
     object GroupBox2: TGroupBox

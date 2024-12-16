@@ -100,6 +100,8 @@ type
     edtPediCodigo: TEdit;
     localQry: TFDQuery;
     cbPrintTime: TComboBox;
+    Label10: TLabel;
+    edtNumCopias: TSpinEdit;
     procedure popShowFormClick(Sender: TObject);
     procedure trayIconDblClick(Sender: TObject);
     procedure btCloseFormClick(Sender: TObject);
@@ -947,7 +949,7 @@ begin
           PrintOptions.ShowDialog := false;
           PrintOptions.Printer := cbTicketPrinter.Text;
           PrintOptions.PrintMode := TfrxPrintMode.pmDefault;
-          PrintOptions.Copies := 1;
+          PrintOptions.Copies := edtNumCopias.Value;
 
           PrepareReport(true);
           Print;
